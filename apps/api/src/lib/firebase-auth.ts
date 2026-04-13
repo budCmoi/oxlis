@@ -3,7 +3,9 @@ import { env } from "../config/env";
 const firebaseIssuer = () => `https://securetoken.google.com/${env.FIREBASE_PROJECT_ID}`;
 const firebaseJwksUrl = new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com");
 
-type VerifiedGoogleIdentity = {
+type SupportedFirebaseProvider = "google.com" | "apple.com";
+
+type VerifiedSocialIdentity = {
   uid: string;
   email: string;
   name: string;
@@ -19,9 +21,12 @@ async function getFirebaseJwksFactory() {
   return firebaseJwksFactoryPromise;
 }
 
-export async function verifyGoogleFirebaseToken(idToken: string): Promise<VerifiedGoogleIdentity> {
+export async function verifyFirebaseSocialToken(
+  idToken: string,
+  expectedProvider: SupportedFirebaseProvider,
+): Promise<VerifiedSocialIdentity> {
   if (!env.FIREBASE_PROJECT_ID) {
-    throw new Error("La connexion Google n'est pas configuree sur le serveur");
+    throw new Error("La connexion sociale n'est pas configuree sur le serveur");
   }
 
   const { jwtVerify } = await import("jose");
@@ -42,15 +47,15 @@ export async function verifyGoogleFirebaseToken(idToken: string): Promise<Verifi
       : "";
 
   if (!uid || !email) {
-    throw new Error("Le jeton Google ne contient pas d'identite exploitable");
+    throw new Error("Le jeton social ne contient pas d'identite exploitable");
   }
 
   if (!emailVerified) {
-    throw new Error("Le compte Google doit avoir une adresse e-mail verifiee");
+    throw new Error("Le compte social doit avoir une adresse e-mail verifiee");
   }
 
-  if (providerId !== "google.com") {
-    throw new Error("Ce jeton n'est pas issu d'une connexion Google");
+  if (providerId !== expectedProvider) {
+    throw new Error(expectedProvider === "google.com" ? "Ce jeton n'est pas issu d'une connexion Google" : "Ce jeton n'est pas issu d'une connexion Apple");
   }
 
   return {

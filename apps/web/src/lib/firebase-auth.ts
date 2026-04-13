@@ -1,9 +1,9 @@
 "use client";
 
 import { FirebaseError, initializeApp, getApp, getApps, type FirebaseOptions } from "firebase/app";
-import { GoogleAuthProvider, getAuth, signInWithPopup, signOut } from "firebase/auth";
+import { GoogleAuthProvider, OAuthProvider, getAuth, signInWithPopup, signOut } from "firebase/auth";
 
-type GoogleAuthPayload = {
+type SocialAuthPayload = {
   idToken: string;
   email: string | null;
   name: string | null;
@@ -39,22 +39,22 @@ function getFirebaseApp() {
   return getApps().length > 0 ? getApp() : initializeApp(config);
 }
 
-function mapFirebaseAuthError(error: unknown) {
+function mapFirebaseAuthError(error: unknown, providerLabel: "Google" | "Apple") {
   if (error instanceof FirebaseError) {
     if (error.code === "auth/popup-closed-by-user") {
-      return new Error("La fenetre Google a ete fermee avant la fin de la connexion");
+      return new Error(`La fenetre ${providerLabel} a ete fermee avant la fin de la connexion`);
     }
 
     if (error.code === "auth/popup-blocked") {
-      return new Error("Le navigateur a bloque la fenetre Google. Autorisez les popups puis recommencez.");
+      return new Error(`Le navigateur a bloque la fenetre ${providerLabel}. Autorisez les popups puis recommencez.`);
     }
 
     if (error.code === "auth/unauthorized-domain") {
-      return new Error("Le domaine actuel n'est pas autorise pour la connexion Google");
+      return new Error(`Le domaine actuel n'est pas autorise pour la connexion ${providerLabel}`);
     }
 
     if (error.code === "auth/operation-not-allowed") {
-      return new Error("La connexion Google n'est pas activee pour ce projet Firebase");
+      return new Error(`La connexion ${providerLabel} n'est pas activee pour ce projet Firebase`);
     }
   }
 
@@ -62,23 +62,24 @@ function mapFirebaseAuthError(error: unknown) {
     return new Error(error.message.trim());
   }
 
-  return new Error("Connexion Google impossible");
+  return new Error(`Connexion ${providerLabel} impossible`);
 }
 
 export function isGoogleAuthConfigured() {
   return Boolean(getFirebaseConfig());
 }
 
-export async function signInWithGooglePopup(): Promise<GoogleAuthPayload> {
+async function signInWithProviderPopup(
+  providerLabel: "Google" | "Apple",
+  provider: GoogleAuthProvider | OAuthProvider,
+): Promise<SocialAuthPayload> {
   const app = getFirebaseApp();
 
   if (!app) {
-    throw new Error("La connexion Google n'est pas configuree sur ce site");
+    throw new Error("La connexion sociale n'est pas configuree sur ce site");
   }
 
   const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: "select_account" });
 
   try {
     const result = await signInWithPopup(auth, provider);
@@ -89,8 +90,21 @@ export async function signInWithGooglePopup(): Promise<GoogleAuthPayload> {
       name: result.user.displayName,
     };
   } catch (error) {
-    throw mapFirebaseAuthError(error);
+    throw mapFirebaseAuthError(error, providerLabel);
   } finally {
     await signOut(auth).catch(() => undefined);
   }
+}
+
+export async function signInWithGooglePopup() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  return signInWithProviderPopup("Google", provider);
+}
+
+export async function signInWithApplePopup() {
+  const provider = new OAuthProvider("apple.com");
+  provider.addScope("email");
+  provider.addScope("name");
+  return signInWithProviderPopup("Apple", provider);
 }

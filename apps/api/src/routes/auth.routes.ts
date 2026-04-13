@@ -4,7 +4,7 @@ import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../config/env";
-import { verifyGoogleFirebaseToken } from "../lib/firebase-auth";
+import { verifyFirebaseSocialToken } from "../lib/firebase-auth";
 import { prisma } from "../lib/prisma";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 
@@ -27,6 +27,8 @@ const googleLoginSchema = z.object({
   role: z.enum(["BUYER", "SELLER", "BOTH"]).optional(),
   name: z.string().trim().min(2).max(120).optional(),
 });
+
+const appleLoginSchema = googleLoginSchema;
 
 const issueToken = (user: { id: string; email: string }) =>
   jwt.sign({ userId: user.id, email: user.email }, env.JWT_SECRET, {
@@ -54,6 +56,51 @@ function getOAuthProviderLabel(passwordHash: string) {
 
 function buildOAuthPasswordMarker(provider: "google" | "apple", subject: string) {
   return `oauth:${provider}:${subject}`;
+}
+
+async function completeSocialLogin({
+  idToken,
+  role,
+  name,
+  provider,
+}: {
+  idToken: string;
+  role?: "BUYER" | "SELLER" | "BOTH";
+  name?: string;
+  provider: "google" | "apple";
+}) {
+  const providerId = provider === "google" ? "google.com" : "apple.com";
+  const providerLabel = provider === "google" ? "Google" : "Apple";
+  const identity = await verifyFirebaseSocialToken(idToken, providerId);
+  let user = await prisma.user.findUnique({ where: { email: identity.email } });
+
+  if (!user) {
+    try {
+      user = await prisma.user.create({
+        data: {
+          name: name?.trim() || identity.name,
+          email: identity.email,
+          passwordHash: buildOAuthPasswordMarker(provider, identity.uid),
+          role: role ?? "BOTH",
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        user = await prisma.user.findUnique({ where: { email: identity.email } });
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  if (!user) {
+    throw new Error(`Impossible de finaliser la connexion ${providerLabel}`);
+  }
+
+  return {
+    token: issueToken(user),
+    user: serializeUser(user),
+  };
 }
 
 router.post("/register", async (req, res) => {
@@ -132,44 +179,42 @@ router.post("/google", async (req, res) => {
     return res.status(400).json({ message: "Payload invalide", errors: parsed.error.issues });
   }
 
-  let identity;
   try {
-    identity = await verifyGoogleFirebaseToken(parsed.data.idToken);
+    return res.json(
+      await completeSocialLogin({
+        idToken: parsed.data.idToken,
+        role: parsed.data.role,
+        name: parsed.data.name,
+        provider: "google",
+      }),
+    );
   } catch (error) {
     const message = error instanceof Error && error.message.trim() ? error.message.trim() : "Jeton Google invalide";
     const statusCode = message.includes("pas configuree") ? 503 : 401;
     return res.status(statusCode).json({ message });
   }
+});
 
-  let user = await prisma.user.findUnique({ where: { email: identity.email } });
-
-  if (!user) {
-    try {
-      user = await prisma.user.create({
-        data: {
-          name: parsed.data.name?.trim() || identity.name,
-          email: identity.email,
-          passwordHash: buildOAuthPasswordMarker("google", identity.uid),
-          role: parsed.data.role ?? "BOTH",
-        },
-      });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        user = await prisma.user.findUnique({ where: { email: identity.email } });
-      } else {
-        throw error;
-      }
-    }
+router.post("/apple", async (req, res) => {
+  const parsed = appleLoginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Payload invalide", errors: parsed.error.issues });
   }
 
-  if (!user) {
-    return res.status(500).json({ message: "Impossible de finaliser la connexion Google" });
+  try {
+    return res.json(
+      await completeSocialLogin({
+        idToken: parsed.data.idToken,
+        role: parsed.data.role,
+        name: parsed.data.name,
+        provider: "apple",
+      }),
+    );
+  } catch (error) {
+    const message = error instanceof Error && error.message.trim() ? error.message.trim() : "Jeton Apple invalide";
+    const statusCode = message.includes("pas configuree") ? 503 : 401;
+    return res.status(statusCode).json({ message });
   }
-
-  return res.json({
-    token: issueToken(user),
-    user: serializeUser(user),
-  });
 });
 
 router.get("/me", requireAuth, async (req: AuthenticatedRequest, res) => {

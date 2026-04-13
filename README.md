@@ -45,7 +45,7 @@ cp apps/web/.env.local.example apps/web/.env.local
 
 Set a dedicated `ATTACHMENTS_ENCRYPTION_KEY` in `apps/api/.env` for production-grade chat attachment encryption at rest.
 
-If you want Google sign-in, also set `FIREBASE_PROJECT_ID` in `apps/api/.env` and the `NEXT_PUBLIC_FIREBASE_*` variables in `apps/web/.env.local`.
+If you want Google or Apple sign-in, also set `FIREBASE_PROJECT_ID` in `apps/api/.env` and the `NEXT_PUBLIC_FIREBASE_*` variables in `apps/web/.env.local`.
 
 3. Start PostgreSQL
 
@@ -127,7 +127,7 @@ Required production environment variables for the API site:
 - `JWT_SECRET`: secret used to sign auth tokens
 - `ATTACHMENTS_ENCRYPTION_KEY`: dedicated key for encrypted chat attachments
 - `CLIENT_URL`: allowed frontend origin, for example `https://oxlis.netlify.app`
-- `FIREBASE_PROJECT_ID`: Firebase project id used for Google sign-in verification
+- `FIREBASE_PROJECT_ID`: Firebase project id used for Google and Apple sign-in verification
 
 Required production environment variables for Google sign-in on the frontend site:
 
@@ -163,7 +163,7 @@ npm run prisma:seed
 
 Once the API is public, set `NEXT_PUBLIC_API_URL` on the frontend site to that API URL, for example `https://oxlis-api.netlify.app/api`, then redeploy the frontend site.
 
-Google sign-in can be wired through Firebase Auth and a backend verification step. Apple sign-in still requires Apple Developer credentials and cannot be auto-provisioned from the repository alone.
+Google and Apple sign-in can be wired through Firebase Auth and a backend verification step, as long as both providers are enabled on the selected Firebase project.
 
 ## Demo Accounts
 
@@ -220,6 +220,7 @@ The repository includes a GitHub Actions workflow that:
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/google`
+- `POST /api/auth/apple`
 - `GET /api/auth/me`
 - `GET /api/listings`
 - `GET /api/listings/:id`
