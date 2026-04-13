@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/auth/require-auth";
 import { ListingForm, ListingFormValues } from "@/components/listings/listing-form";
 import { apiRequest } from "@/lib/api";
@@ -15,13 +16,15 @@ export default function SellPage() {
 }
 
 function SellContent() {
+  const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
+  const [formVersion, setFormVersion] = useState(0);
 
   const submit = async (form: ListingFormValues) => {
     setStatus(null);
 
     try {
-      await apiRequest("/listings", {
+      await apiRequest<{ id: string }>("/listings", {
         method: "POST",
         auth: true,
         body: {
@@ -44,6 +47,8 @@ function SellContent() {
         },
       });
       setStatus("Annonce creee avec succes.");
+      setFormVersion((current) => current + 1);
+      router.refresh();
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Impossible de creer l'annonce");
     }
@@ -61,7 +66,7 @@ function SellContent() {
           </p>
         </div>
 
-        <ListingForm submitLabel="Publier l'annonce" onSubmit={submit} status={status} />
+        <ListingForm key={formVersion} submitLabel="Publier l'annonce" onSubmit={submit} status={status} />
       </section>
     </div>
   );

@@ -39,15 +39,18 @@ export type User = {
 
 export type Conversation = {
   id: string;
-  buyer: { id: string; name: string };
-  seller: { id: string; name: string };
+  buyer: { id: string; name: string; online?: boolean };
+  seller: { id: string; name: string; online?: boolean };
   listing?: { id: string; title: string };
-  messages: Array<{ id: string; content: string; createdAt: string }>;
+  createdAt: string;
+  unreadCount: number;
+  messages: Array<{ id: string; content: string; createdAt: string; readAt: string | null; sender: { id: string; name: string } }>;
 };
 
 export type Message = {
   id: string;
   content: string;
   createdAt: string;
+  readAt: string | null;
   sender: { id: string; name: string };
 };

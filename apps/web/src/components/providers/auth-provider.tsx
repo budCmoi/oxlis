@@ -1,7 +1,7 @@
 "use client";
 
 import { startTransition, createContext, useContext, useEffect, useMemo, useState } from "react";
-import { apiRequest, authStorage } from "@/lib/api";
+import { apiRequest, authStorage, clearApiCache } from "@/lib/api";
 import { User } from "@/types";
 
 type AuthContextValue = {
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const token = authStorage.getToken();
 
     if (!token) {
+      clearApiCache();
       startTransition(() => setUser(null));
       setIsLoading(false);
       return;
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const profile = await apiRequest<User>("/auth/me", { auth: true });
       startTransition(() => setUser(profile));
     } catch {
+      clearApiCache();
       authStorage.clearToken();
       startTransition(() => setUser(null));
     } finally {
@@ -51,15 +53,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: Boolean(user),
       loginWithSession: (token: string, nextUser: User) => {
         authStorage.setToken(token);
+        clearApiCache();
         setUser(nextUser);
         setIsLoading(false);
       },
       loginWithToken: async (token: string) => {
         authStorage.setToken(token);
+        clearApiCache();
         setIsLoading(true);
         await refreshUser();
       },
       logout: () => {
+        clearApiCache();
         authStorage.clearToken();
         startTransition(() => setUser(null));
       },

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { FilterBar, Filters } from "@/components/listings/filter-bar";
 import { ListingCard } from "@/components/listings/listing-card";
-import { apiRequest } from "@/lib/api";
+import { apiRequest, isAbortError } from "@/lib/api";
 import { Listing } from "@/types";
 
 const defaultFilters: Filters = {
@@ -19,6 +19,7 @@ export default function HomePage() {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -30,21 +31,45 @@ export default function HomePage() {
   }, [filters]);
 
   const fetchListings = async () => {
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
     setLoading(true);
     setError(null);
 
     try {
-      const data = await apiRequest<Listing[]>(`/listings${queryString ? `?${queryString}` : ""}`);
-      setListings(data);
+      const data = await apiRequest<Listing[]>(`/listings${queryString ? `?${queryString}` : ""}`, {
+        signal: controller.signal,
+      });
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      startTransition(() => setListings(data));
     } catch (err) {
+      if (isAbortError(err)) {
+        return;
+      }
+
       setError(err instanceof Error ? err.message : "Impossible de charger les annonces");
     } finally {
-      setLoading(false);
+      if (requestRef.current === controller) {
+        requestRef.current = null;
+      }
+
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchListings();
+    void fetchListings();
+
+    return () => {
+      requestRef.current?.abort();
+    };
   }, []);
 
   return (

@@ -17,7 +17,14 @@ app.use(
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
-app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
+app.use(
+  "/uploads",
+  express.static(path.resolve(__dirname, "../uploads"), {
+    setHeaders(res) {
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    },
+  }),
+);
 
 app.use("/api", routes);
 

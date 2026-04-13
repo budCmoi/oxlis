@@ -166,34 +166,6 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
           </div>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-1">
-          {slides.map((slide, index) => (
-            <button
-              key={`${slide.src}-${index}`}
-              type="button"
-              onClick={() => goToSlide(index, index >= activeIndex ? 1 : -1)}
-              aria-label={`Aller a l'image ${index + 1}`}
-              className={`min-w-[140px] overflow-hidden rounded-2xl border text-left transition ${
-                index === activeIndex ? "border-teal-500 shadow-sm" : "border-slate-200 hover:border-slate-300"
-              }`}
-            >
-              <div className="relative aspect-[16/10] bg-slate-900">
-                <Image
-                  src={slide.src}
-                  alt={`Miniature ${index + 1} pour ${listing.title}`}
-                  fill
-                  sizes="140px"
-                  className="object-cover"
-                  unoptimized={/^https?:\/\//i.test(slide.src)}
-                />
-              </div>
-              <div className="bg-white px-3 py-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{slide.label}</p>
-                <p className="mt-1 line-clamp-2 text-sm font-medium text-slate-900">{slide.title}</p>
-              </div>
-            </button>
-          ))}
-        </div>
       </div>
 
       {isLightboxOpen ? (
