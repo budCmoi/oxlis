@@ -12,9 +12,9 @@ Modern marketplace web app inspired by Flippa where users can buy and sell digit
 
 - Listings with price, revenue, profit, niche, type, tech stack
 - Advanced filters on marketplace (price, niche, type)
-- Listing detail pages with business metrics and offers
+- Listing detail pages with business metrics, gallery, detailed memo, and offers
 - User authentication (register/login) with JWT
-- Seller flow to publish new listings
+- Full seller flow to publish and edit listings with structured memo sections and image gallery upload
 - Dashboard for listings and offers management
 - Messaging system between users (conversations + messages)
 - Offer / bidding system (create and status update)
@@ -99,6 +99,8 @@ PostgreSQL is now required for auth, dashboard, listings, offers, messaging, and
 
 The seed loads three sample listings, multiple offers, two conversation threads, and one escrow transaction in `FUNDED` state.
 
+The seed currently loads 10 listings across SaaS, media, commerce, gaming, mobile, education, and developer-tools categories.
+
 ## Smoke Test Workflow
 
 Run the end-to-end API smoke test against the real PostgreSQL database:
@@ -125,6 +127,8 @@ npm run test:e2e
 
 This Playwright scenario covers registration in the UI, listing creation, buyer offer submission, messaging, seller acceptance, buyer funding, seller escrow release, and the final sold state in the dashboard.
 It builds the API and web app first, then starts dedicated e2e servers on `http://127.0.0.1:4100` and `http://127.0.0.1:3100`.
+
+The browser flow also covers the new seller composer with structured memo fields, local image upload, gallery ordering, and image removal before publication.
 
 ## Continuous Integration
 
