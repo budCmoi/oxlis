@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -33,6 +34,11 @@ enum EscrowStatus {
   CANCELLED
 }
 
+enum SocialAuthProvider {
+  GOOGLE
+  APPLE
+}
+
 enum MessageAttachmentCategory {
   IMAGE
   VIDEO
@@ -42,19 +48,35 @@ enum MessageAttachmentCategory {
 }
 
 model User {
-  id             String         @id @default(cuid())
-  name           String
-  email          String         @unique
-  passwordHash   String
-  role           UserRole       @default(BOTH)
-  listings       Listing[]
+  id                String             @id @default(cuid())
+  name              String
+  email             String             @unique
+  passwordHash      String
+  role              UserRole           @default(BOTH)
+  listings          Listing[]
   listingImageAssets ListingImageAsset[]
-  offers         Offer[]
-  sentMessages   Message[]      @relation("SentMessages")
-  conversationsA Conversation[] @relation("ConversationBuyer")
-  conversationsB Conversation[] @relation("ConversationSeller")
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  offers            Offer[]
+  sentMessages      Message[]          @relation("SentMessages")
+  conversationsA    Conversation[]     @relation("ConversationBuyer")
+  conversationsB    Conversation[]     @relation("ConversationSeller")
+  socialAccounts    SocialAccount[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model SocialAccount {
+  id             String             @id @default(cuid())
+  userId         String
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider       SocialAuthProvider
+  providerUserId String
+  email          String
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@unique([provider, providerUserId])
+  @@unique([userId, provider])
+  @@index([email])
 }
 
 model Listing {

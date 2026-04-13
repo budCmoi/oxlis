@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { AuthShowcase } from "@/components/auth/auth-showcase";
 import { useAuth } from "@/components/providers/auth-provider";
-import { isGoogleAuthConfigured, signInWithApplePopup, signInWithGooglePopup } from "@/lib/firebase-auth";
+import { isAppleAuthConfigured, isGoogleAuthConfigured, signInWithApplePopup, signInWithGooglePopup } from "@/lib/social-auth";
 import { apiRequest } from "@/lib/api";
 import { User } from "@/types";
 
@@ -33,7 +33,9 @@ function AuthContent() {
 
   const nextPath = searchParams.get("next") || "/dashboard";
   const isStatusError = status !== null && !status.startsWith("Authentification reussie");
-  const socialAuthAvailable = isGoogleAuthConfigured();
+  const googleAuthAvailable = isGoogleAuthConfigured();
+  const appleAuthAvailable = isAppleAuthConfigured();
+  const socialAuthAvailable = googleAuthAvailable || appleAuthAvailable;
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -73,6 +75,7 @@ function AuthContent() {
       const response = await apiRequest<{ token: string; user: User }>(provider === "google" ? "/auth/google" : "/auth/apple", {
         method: "POST",
         body: {
+          accessToken: socialSession.accessToken,
           idToken: socialSession.idToken,
           role: isLogin ? undefined : form.role,
           name: !isLogin && form.name.trim() ? form.name.trim() : socialSession.name ?? undefined,
@@ -178,25 +181,29 @@ function AuthContent() {
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => submitWithSocial("google")}
-                  disabled={activeSocialProvider !== null}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {activeSocialProvider === "google" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <span className="text-base">G</span>}
-                  <span>Continuer avec Google</span>
-                </button>
+                {googleAuthAvailable ? (
+                  <button
+                    type="button"
+                    onClick={() => submitWithSocial("google")}
+                    disabled={activeSocialProvider !== null}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {activeSocialProvider === "google" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <span className="text-base">G</span>}
+                    <span>Continuer avec Google</span>
+                  </button>
+                ) : null}
 
-                <button
-                  type="button"
-                  onClick={() => submitWithSocial("apple")}
-                  disabled={activeSocialProvider !== null}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {activeSocialProvider === "apple" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <span className="text-base">A</span>}
-                  <span>Continuer avec Apple</span>
-                </button>
+                {appleAuthAvailable ? (
+                  <button
+                    type="button"
+                    onClick={() => submitWithSocial("apple")}
+                    disabled={activeSocialProvider !== null}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {activeSocialProvider === "apple" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <span className="text-base">A</span>}
+                    <span>Continuer avec Apple</span>
+                  </button>
+                ) : null}
               </div>
             </>
           ) : null}

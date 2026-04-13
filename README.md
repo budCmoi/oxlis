@@ -45,7 +45,9 @@ cp apps/web/.env.local.example apps/web/.env.local
 
 Set a dedicated `ATTACHMENTS_ENCRYPTION_KEY` in `apps/api/.env` for production-grade chat attachment encryption at rest.
 
-If you want Google or Apple sign-in, also set `FIREBASE_PROJECT_ID` in `apps/api/.env` and the `NEXT_PUBLIC_FIREBASE_*` variables in `apps/web/.env.local`.
+If you want Google or Apple sign-in without a third-party auth broker, set `GOOGLE_CLIENT_ID` and `APPLE_CLIENT_ID` in `apps/api/.env`, then set `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_APPLE_CLIENT_ID`, and `NEXT_PUBLIC_APPLE_REDIRECT_URI` in `apps/web/.env.local`.
+
+Legacy Firebase-based social sign-in remains supported during migration through `FIREBASE_PROJECT_ID` on the API and the `NEXT_PUBLIC_FIREBASE_*` variables on the frontend.
 
 3. Start PostgreSQL
 
@@ -127,10 +129,18 @@ Required production environment variables for the API site:
 - `JWT_SECRET`: secret used to sign auth tokens
 - `ATTACHMENTS_ENCRYPTION_KEY`: dedicated key for encrypted chat attachments
 - `CLIENT_URL`: allowed frontend origin, for example `https://oxlis.netlify.app`
-- `FIREBASE_PROJECT_ID`: Firebase project id used for Google and Apple sign-in verification
+- `GOOGLE_CLIENT_ID`: Google OAuth client id used to validate Google access tokens
+- `APPLE_CLIENT_ID`: Apple Services ID used to validate Apple identity tokens
 
-Required production environment variables for Google sign-in on the frontend site:
+Required production environment variables for social sign-in on the frontend site:
 
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+- `NEXT_PUBLIC_APPLE_CLIENT_ID`
+- `NEXT_PUBLIC_APPLE_REDIRECT_URI`
+
+Legacy migration fallback if you still route social sign-in through Firebase:
+
+- `FIREBASE_PROJECT_ID`
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
 - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
@@ -163,7 +173,7 @@ npm run prisma:seed
 
 Once the API is public, set `NEXT_PUBLIC_API_URL` on the frontend site to that API URL, for example `https://oxlis-api.netlify.app/api`, then redeploy the frontend site.
 
-Google and Apple sign-in can be wired through Firebase Auth and a backend verification step, as long as both providers are enabled on the selected Firebase project.
+Google and Apple sign-in can run directly against the provider OAuth flows, while Prisma persists the linked provider identities and the application user record. Firebase remains available only as a migration fallback if you still have that setup in place.
 
 ## Demo Accounts
 

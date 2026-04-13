@@ -7,7 +7,7 @@ const router = Router();
 router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
   const userId = req.user!.userId;
 
-  const [listings, offersReceived, offersMade, conversations] = await Promise.all([
+  const [listings, offersReceived, offersMade, conversations] = await prisma.$transaction([
     prisma.listing.findMany({
       where: { ownerId: userId },
       include: {

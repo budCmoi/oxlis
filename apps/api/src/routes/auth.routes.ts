@@ -1,10 +1,11 @@
 import bcrypt from "bcryptjs";
-import { Prisma } from "@prisma/client";
+import { Prisma, SocialAuthProvider } from "@prisma/client";
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../config/env";
 import { verifyFirebaseSocialToken } from "../lib/firebase-auth";
+import { detectIdentityTokenIssuer, verifyAppleIdentityToken, verifyGoogleAccessToken } from "../lib/social-auth";
 import { prisma } from "../lib/prisma";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 
@@ -22,13 +23,23 @@ const loginSchema = z.object({
   password: z.string().min(6),
 });
 
-const googleLoginSchema = z.object({
+const googleLoginSchema = z
+  .object({
+    accessToken: z.string().min(1).optional(),
+    idToken: z.string().min(1).optional(),
+    role: z.enum(["BUYER", "SELLER", "BOTH"]).optional(),
+    name: z.string().trim().min(2).max(120).optional(),
+  })
+  .refine((payload) => Boolean(payload.accessToken || payload.idToken), {
+    message: "Un jeton Google est requis",
+    path: ["accessToken"],
+  });
+
+const appleLoginSchema = z.object({
   idToken: z.string().min(1),
   role: z.enum(["BUYER", "SELLER", "BOTH"]).optional(),
   name: z.string().trim().min(2).max(120).optional(),
 });
-
-const appleLoginSchema = googleLoginSchema;
 
 const issueToken = (user: { id: string; email: string }) =>
   jwt.sign({ userId: user.id, email: user.email }, env.JWT_SECRET, {
@@ -42,51 +53,115 @@ const serializeUser = (user: { id: string; name: string; email: string; role: "B
   role: user.role,
 });
 
-function getOAuthProviderLabel(passwordHash: string) {
-  if (passwordHash.startsWith("oauth:google:")) {
-    return "Google";
-  }
-
-  if (passwordHash.startsWith("oauth:apple:")) {
-    return "Apple";
-  }
-
-  return null;
+function isSocialOnlyPassword(passwordHash: string) {
+  return passwordHash.startsWith("oauth:");
 }
 
-function buildOAuthPasswordMarker(provider: "google" | "apple", subject: string) {
-  return `oauth:${provider}:${subject}`;
+function buildSocialOnlyPasswordMarker() {
+  return "oauth:social-only";
+}
+
+function getProviderLabel(provider: SocialAuthProvider) {
+  return provider === SocialAuthProvider.GOOGLE ? "Google" : "Apple";
+}
+
+function getSocialProviderLabels(accounts: Array<{ provider: SocialAuthProvider }>) {
+  return [...new Set(accounts.map((account) => getProviderLabel(account.provider)))];
+}
+
+function buildSocialLoginMessage(accounts: Array<{ provider: SocialAuthProvider }>) {
+  const labels = getSocialProviderLabels(accounts);
+
+  if (labels.length === 0) {
+    return "Ce compte utilise une connexion sociale. Utilisez un fournisseur social pour vous connecter.";
+  }
+
+  if (labels.length === 1) {
+    return `Ce compte utilise ${labels[0]}. Utilisez Continuer avec ${labels[0]}.`;
+  }
+
+  return "Ce compte utilise Google et Apple. Utilisez l'un de ces deux boutons pour vous connecter.";
 }
 
 async function completeSocialLogin({
-  idToken,
+  provider,
+  providerUserId,
+  email,
+  identityName,
   role,
   name,
-  provider,
 }: {
-  idToken: string;
+  provider: "google" | "apple";
+  providerUserId: string;
+  email: string;
+  identityName: string;
   role?: "BUYER" | "SELLER" | "BOTH";
   name?: string;
-  provider: "google" | "apple";
 }) {
-  const providerId = provider === "google" ? "google.com" : "apple.com";
+  const providerEnum = provider === "google" ? SocialAuthProvider.GOOGLE : SocialAuthProvider.APPLE;
   const providerLabel = provider === "google" ? "Google" : "Apple";
-  const identity = await verifyFirebaseSocialToken(idToken, providerId);
-  let user = await prisma.user.findUnique({ where: { email: identity.email } });
+  const socialAccount = await prisma.socialAccount.findUnique({
+    where: {
+      provider_providerUserId: {
+        provider: providerEnum,
+        providerUserId,
+      },
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  if (socialAccount) {
+    const updatedUser =
+      socialAccount.user.name !== (name?.trim() || identityName) && isSocialOnlyPassword(socialAccount.user.passwordHash)
+        ? await prisma.user.update({
+            where: { id: socialAccount.user.id },
+            data: { name: name?.trim() || identityName },
+          })
+        : socialAccount.user;
+
+    return {
+      token: issueToken(updatedUser),
+      user: serializeUser(updatedUser),
+    };
+  }
+
+  let user = await prisma.user.findUnique({
+    where: { email },
+    include: {
+      socialAccounts: true,
+    },
+  });
 
   if (!user) {
     try {
       user = await prisma.user.create({
         data: {
-          name: name?.trim() || identity.name,
-          email: identity.email,
-          passwordHash: buildOAuthPasswordMarker(provider, identity.uid),
+          name: name?.trim() || identityName,
+          email,
+          passwordHash: buildSocialOnlyPasswordMarker(),
           role: role ?? "BOTH",
+          socialAccounts: {
+            create: {
+              provider: providerEnum,
+              providerUserId,
+              email,
+            },
+          },
+        },
+        include: {
+          socialAccounts: true,
         },
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        user = await prisma.user.findUnique({ where: { email: identity.email } });
+        user = await prisma.user.findUnique({
+          where: { email },
+          include: {
+            socialAccounts: true,
+          },
+        });
       } else {
         throw error;
       }
@@ -95,6 +170,43 @@ async function completeSocialLogin({
 
   if (!user) {
     throw new Error(`Impossible de finaliser la connexion ${providerLabel}`);
+  }
+
+  const existingProviderLink = user.socialAccounts.find((account) => account.provider === providerEnum);
+
+  if (existingProviderLink && existingProviderLink.providerUserId !== providerUserId) {
+    throw new Error(`Ce compte est deja lie a un autre identifiant ${providerLabel}`);
+  }
+
+  await prisma.socialAccount.upsert({
+    where: {
+      userId_provider: {
+        userId: user.id,
+        provider: providerEnum,
+      },
+    },
+    update: {
+      providerUserId,
+      email,
+    },
+    create: {
+      userId: user.id,
+      provider: providerEnum,
+      providerUserId,
+      email,
+    },
+  });
+
+  if (isSocialOnlyPassword(user.passwordHash) && user.name !== (name?.trim() || identityName)) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name: name?.trim() || identityName,
+      },
+      include: {
+        socialAccounts: true,
+      },
+    });
   }
 
   return {
@@ -151,15 +263,23 @@ router.post("/login", async (req, res) => {
   const email = parsed.data.email.trim().toLowerCase();
   const { password } = parsed.data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: {
+      socialAccounts: {
+        select: {
+          provider: true,
+        },
+      },
+    },
+  });
 
   if (!user) {
     return res.status(404).json({ message: "Aucun compte n'est associe a cet e-mail" });
   }
 
-  const oauthProviderLabel = getOAuthProviderLabel(user.passwordHash);
-  if (oauthProviderLabel) {
-    return res.status(409).json({ message: `Ce compte utilise ${oauthProviderLabel}. Utilisez Continuer avec ${oauthProviderLabel}.` });
+  if (isSocialOnlyPassword(user.passwordHash)) {
+    return res.status(409).json({ message: buildSocialLoginMessage(user.socialAccounts) });
   }
 
   const passwordMatch = await bcrypt.compare(password, user.passwordHash);
@@ -180,17 +300,28 @@ router.post("/google", async (req, res) => {
   }
 
   try {
+    const identity = parsed.data.accessToken
+      ? await verifyGoogleAccessToken(parsed.data.accessToken)
+      : await verifyFirebaseSocialToken(parsed.data.idToken!, "google.com").then((verified) => ({
+          provider: "google" as const,
+          providerUserId: verified.uid,
+          email: verified.email,
+          name: verified.name,
+        }));
+
     return res.json(
       await completeSocialLogin({
-        idToken: parsed.data.idToken,
+        provider: identity.provider,
+        providerUserId: identity.providerUserId,
+        email: identity.email,
+        identityName: identity.name,
         role: parsed.data.role,
         name: parsed.data.name,
-        provider: "google",
       }),
     );
   } catch (error) {
     const message = error instanceof Error && error.message.trim() ? error.message.trim() : "Jeton Google invalide";
-    const statusCode = message.includes("pas configuree") ? 503 : 401;
+    const statusCode = message.includes("pas configuree") ? 503 : message.includes("deja lie") ? 409 : 401;
     return res.status(statusCode).json({ message });
   }
 });
@@ -202,17 +333,29 @@ router.post("/apple", async (req, res) => {
   }
 
   try {
+    const issuer = detectIdentityTokenIssuer(parsed.data.idToken);
+    const identity = issuer === "https://appleid.apple.com"
+      ? await verifyAppleIdentityToken(parsed.data.idToken)
+      : await verifyFirebaseSocialToken(parsed.data.idToken, "apple.com").then((verified) => ({
+          provider: "apple" as const,
+          providerUserId: verified.uid,
+          email: verified.email,
+          name: verified.name,
+        }));
+
     return res.json(
       await completeSocialLogin({
-        idToken: parsed.data.idToken,
+        provider: identity.provider,
+        providerUserId: identity.providerUserId,
+        email: identity.email,
+        identityName: parsed.data.name?.trim() || identity.name,
         role: parsed.data.role,
         name: parsed.data.name,
-        provider: "apple",
       }),
     );
   } catch (error) {
     const message = error instanceof Error && error.message.trim() ? error.message.trim() : "Jeton Apple invalide";
-    const statusCode = message.includes("pas configuree") ? 503 : 401;
+    const statusCode = message.includes("pas configuree") ? 503 : message.includes("deja lie") ? 409 : 401;
     return res.status(statusCode).json({ message });
   }
 });

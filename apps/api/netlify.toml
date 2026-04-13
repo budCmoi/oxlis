@@ -1,5 +1,5 @@
 [build]
-  command = "echo Building API functions"
+  command = "npm run prisma:generate"
 
 [functions]
   directory = "netlify/functions"
