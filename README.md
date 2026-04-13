@@ -45,6 +45,8 @@ cp apps/web/.env.local.example apps/web/.env.local
 
 Set a dedicated `ATTACHMENTS_ENCRYPTION_KEY` in `apps/api/.env` for production-grade chat attachment encryption at rest.
 
+If you want Google sign-in, also set `FIREBASE_PROJECT_ID` in `apps/api/.env` and the `NEXT_PUBLIC_FIREBASE_*` variables in `apps/web/.env.local`.
+
 3. Start PostgreSQL
 
 ```bash
@@ -125,6 +127,17 @@ Required production environment variables for the API site:
 - `JWT_SECRET`: secret used to sign auth tokens
 - `ATTACHMENTS_ENCRYPTION_KEY`: dedicated key for encrypted chat attachments
 - `CLIENT_URL`: allowed frontend origin, for example `https://oxlis.netlify.app`
+- `FIREBASE_PROJECT_ID`: Firebase project id used for Google sign-in verification
+
+Required production environment variables for Google sign-in on the frontend site:
+
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
 
 Recommended production flow:
 
@@ -149,6 +162,8 @@ npm run prisma:seed
 `npm run prisma:seed` is safe to rerun because it uses stable ids and upserts demo records. Use `npm run prisma:seed:reset` only on disposable environments because it wipes marketplace data before reseeding.
 
 Once the API is public, set `NEXT_PUBLIC_API_URL` on the frontend site to that API URL, for example `https://oxlis-api.netlify.app/api`, then redeploy the frontend site.
+
+Google sign-in can be wired through Firebase Auth and a backend verification step. Apple sign-in still requires Apple Developer credentials and cannot be auto-provisioned from the repository alone.
 
 ## Demo Accounts
 
@@ -204,6 +219,7 @@ The repository includes a GitHub Actions workflow that:
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `POST /api/auth/google`
 - `GET /api/auth/me`
 - `GET /api/listings`
 - `GET /api/listings/:id`

@@ -2,8 +2,10 @@
 
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { LoaderCircle } from "lucide-react";
 import { AuthShowcase } from "@/components/auth/auth-showcase";
 import { useAuth } from "@/components/providers/auth-provider";
+import { isGoogleAuthConfigured, signInWithGooglePopup } from "@/lib/firebase-auth";
 import { apiRequest } from "@/lib/api";
 import { User } from "@/types";
 
@@ -21,6 +23,7 @@ function AuthContent() {
   const { isAuthenticated, isLoading, loginWithSession } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
+  const [isGooglePending, setIsGooglePending] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -30,6 +33,7 @@ function AuthContent() {
 
   const nextPath = searchParams.get("next") || "/dashboard";
   const isStatusError = status !== null && !status.startsWith("Authentification reussie");
+  const googleAuthAvailable = isGoogleAuthConfigured();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -57,6 +61,31 @@ function AuthContent() {
       router.replace(nextPath);
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Echec de l'authentification");
+    }
+  };
+
+  const submitWithGoogle = async () => {
+    setStatus(null);
+    setIsGooglePending(true);
+
+    try {
+      const googleSession = await signInWithGooglePopup();
+      const response = await apiRequest<{ token: string; user: User }>("/auth/google", {
+        method: "POST",
+        body: {
+          idToken: googleSession.idToken,
+          role: isLogin ? undefined : form.role,
+          name: !isLogin && form.name.trim() ? form.name.trim() : googleSession.name ?? undefined,
+        },
+      });
+
+      loginWithSession(response.token, response.user);
+      setStatus("Authentification reussie. Redirection vers votre espace...");
+      router.replace(nextPath);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Connexion Google impossible");
+    } finally {
+      setIsGooglePending(false);
     }
   };
 
@@ -139,6 +168,26 @@ function AuthContent() {
               {isLogin ? "Connexion" : "Creer un compte"}
             </button>
           </form>
+
+          {googleAuthAvailable ? (
+            <>
+              <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-slate-400">
+                <span className="h-px flex-1 bg-slate-200" />
+                <span>ou</span>
+                <span className="h-px flex-1 bg-slate-200" />
+              </div>
+
+              <button
+                type="button"
+                onClick={submitWithGoogle}
+                disabled={isGooglePending}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isGooglePending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <span className="text-base">G</span>}
+                <span>Continuer avec Google</span>
+              </button>
+            </>
+          ) : null}
 
           {status ? (
             <p className={`mt-4 rounded-xl px-4 py-3 text-sm ${isStatusError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>

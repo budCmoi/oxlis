@@ -7,6 +7,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1).optional(),
   JWT_SECRET: z.string().min(8),
   ATTACHMENTS_ENCRYPTION_KEY: z.string().min(16).optional(),
+  FIREBASE_PROJECT_ID: z.string().min(1).optional(),
   PORT: z.string().default("4000"),
   CLIENT_URL: z.string().default("http://localhost:3000"),
 });
