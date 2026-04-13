@@ -33,6 +33,14 @@ enum EscrowStatus {
   CANCELLED
 }
 
+enum MessageAttachmentCategory {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  OTHER
+}
+
 model User {
   id             String         @id @default(cuid())
   name           String
@@ -40,6 +48,7 @@ model User {
   passwordHash   String
   role           UserRole       @default(BOTH)
   listings       Listing[]
+  listingImageAssets ListingImageAsset[]
   offers         Offer[]
   sentMessages   Message[]      @relation("SentMessages")
   conversationsA Conversation[] @relation("ConversationBuyer")
@@ -108,12 +117,45 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   senderId       String
   sender         User         @relation("SentMessages", fields: [senderId], references: [id])
-  content        String
+  content        String       @default("")
+  attachments    MessageAttachment[]
   readAt         DateTime?
   createdAt      DateTime     @default(now())
 
   @@index([conversationId, createdAt])
   @@index([conversationId, senderId, readAt])
+}
+
+model MessageAttachment {
+  id            String                    @id @default(cuid())
+  messageId     String
+  message       Message                   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  category      MessageAttachmentCategory
+  fileName      String
+  mimeType      String
+  sizeBytes     Int
+  algorithm     String
+  iv            Bytes
+  authTag       Bytes
+  blob          Bytes
+  contentSha256 String
+  createdAt     DateTime                  @default(now())
+
+  @@index([messageId, createdAt])
+}
+
+model ListingImageAsset {
+  id            String   @id @default(cuid())
+  ownerId       String
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  fileName      String
+  mimeType      String
+  sizeBytes     Int
+  blob          Bytes
+  contentSha256 String
+  createdAt     DateTime @default(now())
+
+  @@index([ownerId, createdAt])
 }
 
 model EscrowTransaction {

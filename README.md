@@ -4,7 +4,7 @@ Modern marketplace web app inspired by Flippa where users can buy and sell digit
 
 ## Stack
 
-- Frontend: Next.js (App Router) + Tailwind CSS + Framer Motion
+- Frontend: Next.js (App Router) + Tailwind CSS
 - Backend: Node.js + Express REST API (TypeScript)
 - Database: PostgreSQL + Prisma ORM
 
@@ -17,6 +17,7 @@ Modern marketplace web app inspired by Flippa where users can buy and sell digit
 - Full seller flow to publish and edit listings with structured memo sections and image gallery upload
 - Dashboard for listings and offers management
 - Messaging system between users (conversations + messages)
+- Encrypted chat attachments stored directly in PostgreSQL via Prisma (images, videos, audio, documents)
 - Offer / bidding system (create and status update)
 - Secure payment simulation using escrow states (initiated/funded/released)
 
@@ -41,6 +42,8 @@ cd ../web && npm install
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.local.example apps/web/.env.local
 ```
+
+Set a dedicated `ATTACHMENTS_ENCRYPTION_KEY` in `apps/api/.env` for production-grade chat attachment encryption at rest.
 
 3. Start PostgreSQL
 
@@ -90,6 +93,62 @@ Frontend runs on `http://localhost:3000`.
 API runs on `http://localhost:4000/api`.
 
 PostgreSQL is now required for auth, dashboard, listings, offers, messaging, and escrow flows.
+
+## Netlify Deployment
+
+The frontend in `apps/web` is ready for deployment on Netlify.
+
+This repository now includes a root `netlify.toml` that configures Netlify to:
+
+- build from `apps/web`
+- run `npm run build`
+- use Node.js 20
+
+To deploy:
+
+1. Import the repository into Netlify.
+2. Keep the build settings from `netlify.toml`.
+3. Add the environment variable `NEXT_PUBLIC_API_URL` in Netlify and point it to your public API, for example `https://api.example.com/api`.
+4. Redeploy the site.
+
+Important: this Netlify setup deploys the Next.js frontend only. The Express API in `apps/api` must be hosted separately on a public URL, then exposed to the frontend through `NEXT_PUBLIC_API_URL`.
+
+Optional for smoother zero-downtime rollouts on Netlify with Next.js: set `NETLIFY_NEXT_SKEW_PROTECTION=true` in the Netlify environment variables.
+
+## API + Database Deployment
+
+The backend in `apps/api` is deployable as a separate Netlify site when `apps/api` is used as that site's deploy base, using the included `apps/api/netlify.toml`.
+
+Required production environment variables for the API site:
+
+- `DATABASE_URL`: public PostgreSQL connection string
+- `JWT_SECRET`: secret used to sign auth tokens
+- `ATTACHMENTS_ENCRYPTION_KEY`: dedicated key for encrypted chat attachments
+- `CLIENT_URL`: allowed frontend origin, for example `https://oxlis.netlify.app`
+
+Recommended production flow:
+
+1. Create or connect a PostgreSQL database from your provider of choice.
+2. Create a second Netlify site for `apps/api`.
+3. Set the four environment variables above on that API site.
+4. Deploy the API site and verify `GET /api/health` returns `{ "status": "ok" }`.
+5. Run production migrations against the same `DATABASE_URL`:
+
+```bash
+cd apps/api
+npm run prisma:migrate:deploy
+```
+
+6. Seed the production database with the non-destructive demo seed if needed:
+
+```bash
+cd apps/api
+npm run prisma:seed
+```
+
+`npm run prisma:seed` is safe to rerun because it uses stable ids and upserts demo records. Use `npm run prisma:seed:reset` only on disposable environments because it wipes marketplace data before reseeding.
+
+Once the API is public, set `NEXT_PUBLIC_API_URL` on the frontend site to that API URL, for example `https://oxlis-api.netlify.app/api`, then redeploy the frontend site.
 
 ## Demo Accounts
 

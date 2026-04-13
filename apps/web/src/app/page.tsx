@@ -1,7 +1,6 @@
 "use client";
 
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { FilterBar, Filters } from "@/components/listings/filter-bar";
 import { ListingCard } from "@/components/listings/listing-card";
 import { apiRequest, isAbortError } from "@/lib/api";
@@ -74,12 +73,7 @@ export default function HomePage() {
 
   return (
     <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55 }}
-        className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-11"
-      >
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-11">
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Plateforme d'acquisition digitale</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
@@ -90,7 +84,7 @@ export default function HomePage() {
             envoyez des offres et finalisez via une simulation de sequestre.
           </p>
         </div>
-      </motion.section>
+      </section>
 
       <div className="mt-4 sm:mt-5">
         <FilterBar filters={filters} setFilters={setFilters} onApply={fetchListings} />
@@ -100,16 +94,10 @@ export default function HomePage() {
       {error ? <p className="mt-4 sm:mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
 
       <section className="mt-4 grid gap-4 sm:mt-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {listings.map((listing, index) => (
-          <motion.div
-            key={listing.id}
-            className="h-full"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05, duration: 0.35 }}
-          >
+        {listings.map((listing) => (
+          <div key={listing.id} className="h-full">
             <ListingCard listing={listing} />
-          </motion.div>
+          </div>
         ))}
       </section>
 

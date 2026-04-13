@@ -1,38 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { getListingGallery } from "@/lib/listing-visuals";
 import { Listing } from "@/types";
-
-const slideMotionVariants = {
-  enter: (direction: 1 | -1) => ({
-    x: direction > 0 ? 56 : -56,
-    opacity: 0,
-    scale: 1.02,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.4,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
-  },
-  exit: (direction: 1 | -1) => ({
-    x: direction > 0 ? -56 : 56,
-    opacity: 0,
-    scale: 0.98,
-    transition: {
-      duration: 0.3,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
-  }),
-};
 
 type ListingGalleryProps = {
   listing: Pick<
@@ -45,17 +18,15 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
   const slides = getListingGallery(listing);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
   const activeSlide = slides[activeIndex];
   const isRemoteSlide = /^https?:\/\//i.test(activeSlide.src);
 
-  const goToSlide = (index: number, direction: 1 | -1 = 1) => {
-    setSlideDirection(direction);
+  const goToSlide = (index: number) => {
     setActiveIndex((index + slides.length) % slides.length);
   };
 
   const moveSlide = (direction: 1 | -1) => {
-    goToSlide(activeIndex + direction, direction);
+    goToSlide(activeIndex + direction);
   };
 
   useEffect(() => {
@@ -91,16 +62,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
             aria-label="Ouvrir l'image en grand"
             className="relative block aspect-[16/9] w-full overflow-hidden text-left"
           >
-            <AnimatePresence initial={false} custom={slideDirection} mode="wait">
-              <motion.div
-                key={`gallery-slide-${activeIndex}`}
-                custom={slideDirection}
-                variants={slideMotionVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="absolute inset-0"
-              >
+            <div className="absolute inset-0">
                 <Image
                   src={activeSlide.src}
                   alt={`Apercu visuel de ${listing.title} - ${activeSlide.title}`}
@@ -134,8 +96,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
                     <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />
                   </div>
                 </div>
-              </motion.div>
-            </AnimatePresence>
+            </div>
 
             <div className="absolute right-4 top-4 z-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-slate-950/45 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
               <Expand className="h-3.5 w-3.5" />
@@ -181,16 +142,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
 
           <div className="w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/10 bg-slate-950 shadow-2xl">
             <div className="relative aspect-[16/9] w-full">
-              <AnimatePresence initial={false} custom={slideDirection} mode="wait">
-                <motion.div
-                  key={`lightbox-slide-${activeIndex}`}
-                  custom={slideDirection}
-                  variants={slideMotionVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  className="absolute inset-0"
-                >
+              <div className="absolute inset-0">
                   <Image
                     src={activeSlide.src}
                     alt={`Version agrandie de ${listing.title} - ${activeSlide.title}`}
@@ -210,8 +162,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
                       <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />
                     </div>
                   </div>
-                </motion.div>
-              </AnimatePresence>
+              </div>
 
               <button
                 type="button"

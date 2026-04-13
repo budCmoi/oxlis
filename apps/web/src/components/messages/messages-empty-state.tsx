@@ -1,9 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 const rotatingQuotes = [
   {
@@ -40,20 +38,7 @@ const onboardingSteps = [
 ] as const;
 
 export function MessagesEmptyState() {
-  const [quoteIndex, setQuoteIndex] = useState(0);
-  const prefersReducedMotion = useReducedMotion();
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      setQuoteIndex((current) => (current + 1) % rotatingQuotes.length);
-    }, 3800);
-
-    return () => window.clearInterval(intervalId);
-  }, [prefersReducedMotion]);
+  const featuredQuote = rotatingQuotes[0];
 
   return (
     <section className="mt-4 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm sm:mt-5">
@@ -101,34 +86,21 @@ export function MessagesEmptyState() {
           <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Proverbes qui defilent</p>
 
-            <div className="relative mt-4 min-h-[122px]">
-              <AnimatePresence mode="wait">
-                <motion.blockquote
-                  key={rotatingQuotes[quoteIndex].quote}
-                  initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
-                  animate={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
-                  exit={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -18 }}
-                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 flex flex-col justify-center"
-                >
-                  <p className="text-lg font-semibold leading-8 text-slate-900">“{rotatingQuotes[quoteIndex].quote}”</p>
-                  <footer className="mt-3 text-sm text-slate-500">{rotatingQuotes[quoteIndex].author}</footer>
-                </motion.blockquote>
-              </AnimatePresence>
+            <div className="mt-4 min-h-[122px]">
+              <blockquote className="flex min-h-[122px] flex-col justify-center">
+                <p className="text-lg font-semibold leading-8 text-slate-900">“{featuredQuote.quote}”</p>
+                <footer className="mt-3 text-sm text-slate-500">{featuredQuote.author}</footer>
+              </blockquote>
             </div>
 
             <div className="mt-4 overflow-hidden rounded-full border border-slate-200 bg-slate-50">
-              <motion.div
-                className="flex w-max gap-2 px-2 py-2"
-                animate={prefersReducedMotion ? undefined : { x: ["0%", "-50%"] }}
-                transition={prefersReducedMotion ? undefined : { duration: 18, ease: "linear", repeat: Infinity }}
-              >
-                {[...tickerQuotes, ...tickerQuotes].map((quote, index) => (
+              <div className="flex flex-wrap gap-2 px-2 py-2">
+                {tickerQuotes.map((quote, index) => (
                   <span key={`${quote}-${index}`} className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">
                     {quote}
                   </span>
                 ))}
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>

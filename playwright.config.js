@@ -27,6 +27,7 @@ module.exports = defineConfig({
         CLIENT_URL: process.env.CLIENT_URL || baseWebUrl,
         DATABASE_URL: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/oxlis",
         JWT_SECRET: process.env.JWT_SECRET || "change-me-now",
+        ATTACHMENTS_ENCRYPTION_KEY: process.env.ATTACHMENTS_ENCRYPTION_KEY || "playwright-attachments-key",
       },
     },
     {

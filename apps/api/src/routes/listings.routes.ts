@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { extractListingImageAssetId } from "../lib/listing-images";
 import { prisma } from "../lib/prisma";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 
@@ -22,6 +23,27 @@ const listingSchema = z.object({
   techStack: z.array(z.string().min(1)).min(1),
   status: z.enum(["ACTIVE", "SOLD", "DRAFT"]).optional(),
 });
+
+async function cleanupUnusedListingImageAssets(imageUrls: string[], excludedListingId?: string) {
+  const assetEntries = imageUrls
+    .map((imageUrl) => ({ imageUrl, assetId: extractListingImageAssetId(imageUrl) }))
+    .filter((entry): entry is { imageUrl: string; assetId: string } => Boolean(entry.assetId));
+
+  await Promise.all(
+    assetEntries.map(async ({ imageUrl, assetId }) => {
+      const remainingReferences = await prisma.listing.count({
+        where: {
+          id: excludedListingId ? { not: excludedListingId } : undefined,
+          imageUrls: { has: imageUrl },
+        },
+      });
+
+      if (remainingReferences === 0) {
+        await prisma.listingImageAsset.deleteMany({ where: { id: assetId } });
+      }
+    }),
+  );
+}
 
 router.get("/", async (req, res) => {
   const priceMin = req.query.priceMin ? Number(req.query.priceMin) : undefined;
@@ -111,14 +133,19 @@ router.put("/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
     return res.status(403).json({ message: "Action non autorisee" });
   }
 
+  const nextImageUrls = parsed.data.imageUrls ?? existing.imageUrls;
+
   const listing = await prisma.listing.update({
     where: { id },
     data: {
       ...parsed.data,
-      imageUrls: parsed.data.imageUrls ?? existing.imageUrls,
+      imageUrls: nextImageUrls,
       status: parsed.data.status ?? existing.status,
     },
   });
+
+  const removedImageUrls = existing.imageUrls.filter((imageUrl) => !nextImageUrls.includes(imageUrl));
+  await cleanupUnusedListingImageAssets(removedImageUrls, listing.id);
 
   return res.json(listing);
 });
@@ -135,6 +162,7 @@ router.delete("/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
   }
 
   await prisma.listing.delete({ where: { id } });
+  await cleanupUnusedListingImageAssets(existing.imageUrls);
   return res.status(204).send();
 });
 

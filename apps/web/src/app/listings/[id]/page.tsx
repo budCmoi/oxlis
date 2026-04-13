@@ -1,7 +1,6 @@
 "use client";
 
 import { startTransition, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -184,12 +183,7 @@ export default function ListingDetailPage() {
 
   return (
     <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55 }}
-        className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-10"
-      >
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-10">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
@@ -212,7 +206,7 @@ export default function ListingDetailPage() {
             ))}
           </div>
         </div>
-      </motion.section>
+      </section>
 
       <div className="mt-4 grid gap-4 sm:mt-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.82fr)] xl:items-start">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">

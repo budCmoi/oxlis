@@ -1,6 +1,19 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 const MEMORY_CACHE_TTL_MS = 15_000;
 
+const httpStatusFallbackMessages: Record<number, string> = {
+  400: "Requete invalide",
+  401: "Authentification requise",
+  403: "Acces refuse",
+  404: "Service introuvable",
+  409: "Conflit sur les donnees envoyees",
+  422: "Donnees invalides",
+  500: "Erreur interne du serveur",
+  502: "Passerelle serveur indisponible",
+  503: "Service temporairement indisponible",
+  504: "Le serveur a mis trop de temps a repondre",
+};
+
 const responseCache = new Map<string, { expiresAt: number; value: unknown }>();
 const inflightRequests = new Map<string, Promise<unknown>>();
 
@@ -13,24 +26,67 @@ const getToken = () => {
 };
 
 const buildError = async (response: Response) => {
-  const payload = (await response.json().catch(() => ({ message: "Echec de la requete" }))) as {
-    message?: string;
-    errors?: Array<{ message?: string; path?: Array<string | number> }>;
-  };
+  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
 
-  if (Array.isArray(payload.errors) && payload.errors.length > 0) {
-    const details = payload.errors
-      .map((issue) => {
-        const path = issue.path?.length ? `${issue.path.join(".")} : ` : "";
-        return `${path}${issue.message ?? "Champ invalide"}`;
-      })
-      .join(" | ");
+  if (contentType.includes("application/json")) {
+    const payload = (await response.json().catch(() => ({ message: undefined }))) as {
+      message?: string;
+      errors?: Array<{ message?: string; path?: Array<string | number> }>;
+    };
 
-    return new Error(`${payload.message ?? "Echec de la requete"} : ${details}`);
+    if (Array.isArray(payload.errors) && payload.errors.length > 0) {
+      const details = payload.errors
+        .map((issue) => {
+          const path = issue.path?.length ? `${issue.path.join(".")} : ` : "";
+          return `${path}${issue.message ?? "Champ invalide"}`;
+        })
+        .join(" | ");
+
+      return new Error(`${payload.message ?? getHttpFallbackMessage(response)} : ${details}`);
+    }
+
+    if (payload.message?.trim()) {
+      return new Error(payload.message.trim());
+    }
   }
 
-  return new Error(payload.message ?? "Echec de la requete");
+  const responseText = (await response.text().catch(() => "")).trim();
+
+  if (responseText && !looksLikeHtml(responseText, contentType)) {
+    return new Error(responseText);
+  }
+
+  return new Error(getHttpFallbackMessage(response));
 };
+
+function getHttpFallbackMessage(response: Response) {
+  const baseMessage = httpStatusFallbackMessages[response.status] ?? `Erreur serveur (${response.status})`;
+  return `${baseMessage}${response.statusText ? ` - ${response.statusText}` : ""}`;
+}
+
+function looksLikeHtml(value: string, contentType: string) {
+  return contentType.includes("text/html") || /^<!doctype html>|^<html[\s>]/i.test(value);
+}
+
+function buildNetworkError(error: unknown) {
+  if (error instanceof DOMException && error.name === "AbortError") {
+    return error;
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return new Error(`Impossible de joindre le serveur: ${error.message.trim()}`);
+  }
+
+  return new Error("Impossible de joindre le serveur. Verifiez la connexion ou la configuration de l'API.");
+}
+
+async function performFetch(input: RequestInfo | URL, init?: RequestInit) {
+  try {
+    return await fetch(input, init);
+  } catch (error) {
+    throw buildNetworkError(error);
+  }
+}
 
 type RequestOptions = {
   method?: string;
@@ -110,7 +166,7 @@ async function requestJson<T>(path: string, options: RequestOptions, method: str
     }
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await performFetch(`${API_URL}${path}`, {
     method,
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
@@ -127,6 +183,30 @@ async function requestJson<T>(path: string, options: RequestOptions, method: str
   }
 
   return response.json() as Promise<T>;
+}
+
+async function requestBlob(path: string, auth = false) {
+  const headers: Record<string, string> = {};
+
+  if (auth) {
+    const token = getToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  const targetUrl = path.startsWith("http://") || path.startsWith("https://") ? path : `${API_URL}${path}`;
+  const response = await performFetch(targetUrl, {
+    method: "GET",
+    headers,
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw await buildError(response);
+  }
+
+  return response.blob();
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -189,7 +269,7 @@ export async function uploadListingImages(files: File[]): Promise<string[]> {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}/uploads/listing-images`, {
+  const response = await performFetch(`${API_URL}/uploads/listing-images`, {
     method: "POST",
     headers,
     body: formData,
@@ -201,6 +281,60 @@ export async function uploadListingImages(files: File[]): Promise<string[]> {
 
   const payload = (await response.json()) as { urls: string[] };
   return payload.urls;
+}
+
+export async function sendConversationMessage<T>({
+  conversationId,
+  content,
+  attachments = [],
+}: {
+  conversationId: string;
+  content: string;
+  attachments?: File[];
+}): Promise<T> {
+  const trimmedContent = content.trim();
+
+  if (attachments.length === 0) {
+    return apiRequest<T>(`/messages/conversations/${conversationId}/messages`, {
+      method: "POST",
+      auth: true,
+      body: { content: trimmedContent },
+    });
+  }
+
+  const formData = new FormData();
+  if (trimmedContent) {
+    formData.append("content", trimmedContent);
+  }
+
+  for (const attachment of attachments) {
+    formData.append("attachments", attachment);
+  }
+
+  const headers: Record<string, string> = {};
+  const token = getToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await performFetch(`${API_URL}/messages/conversations/${conversationId}/messages`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw await buildError(response);
+  }
+
+  clearApiCache();
+
+  return response.json() as Promise<T>;
+}
+
+export function fetchProtectedBlob(path: string, options: { download?: boolean } = {}) {
+  const targetPath = options.download ? `${path}${path.includes("?") ? "&" : "?"}download=1` : path;
+  return requestBlob(targetPath, true);
 }
 
 export const authStorage = {

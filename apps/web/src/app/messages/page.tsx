@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, Suspense, startTransition, useDeferredValue, useEffect, useEffectEvent, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { ChangeEvent, FormEvent, Suspense, startTransition, useDeferredValue, useEffect, useEffectEvent, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { ArrowLeft, Check, CheckCheck, LoaderCircle, Search, SendHorizonal } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, LoaderCircle, Paperclip, Search, SendHorizonal, Trash2, X } from "lucide-react";
 import { RequireAuth } from "@/components/auth/require-auth";
+import { MessageAttachmentCard } from "@/components/messages/message-attachment-card";
 import { MessagesEmptyState } from "@/components/messages/messages-empty-state";
 import { useAuth } from "@/components/providers/auth-provider";
-import { apiRequest, authStorage, isAbortError } from "@/lib/api";
+import { apiRequest, authStorage, isAbortError, sendConversationMessage } from "@/lib/api";
 import { openApiEventStream } from "@/lib/realtime-stream";
 import { Conversation, Message } from "@/types";
 
@@ -29,9 +30,17 @@ type PresencePayload = {
   online: boolean;
 };
 
+type ConversationDeletedPayload = {
+  conversationId: string;
+};
+
 type TimelineItem =
   | { type: "day"; key: string; label: string }
   | { type: "message"; key: string; message: Message };
+
+const MESSAGE_ATTACHMENT_ACCEPT = "image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.csv,.zip,.json,.xml,.odt,.ods,.odp";
+const MAX_ATTACHMENTS_PER_MESSAGE = 8;
+const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
 
 export default function MessagesPage() {
   return (
@@ -44,20 +53,24 @@ export default function MessagesPage() {
 }
 
 function MessagesContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
+  const [queuedFiles, setQueuedFiles] = useState<File[]>([]);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [isDeletingConversation, setIsDeletingConversation] = useState(false);
   const [, setConnectionState] = useState<"connecting" | "connected" | "reconnecting">("connecting");
   const [isMobileListOpen, setIsMobileListOpen] = useState(true);
   const requestedConversationId = searchParams.get("conversation");
   const deferredSearch = useDeferredValue(search);
   const messagesViewportRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const readMarkerRef = useRef<Record<string, string>>({});
 
   const applyReceipt = useEffectEvent((receipt: ReadReceiptPayload) => {
@@ -164,6 +177,27 @@ function MessagesContent() {
     }
   });
 
+  const applyConversationDeletion = useEffectEvent((conversationId: string) => {
+    const remainingConversations = conversations.filter((conversation) => conversation.id !== conversationId);
+    const nextActiveId = activeId === conversationId ? remainingConversations[0]?.id ?? null : activeId;
+
+    startTransition(() => {
+      setConversations(remainingConversations);
+
+      if (activeId === conversationId) {
+        setActiveId(nextActiveId);
+        setMessages([]);
+        setText("");
+        setQueuedFiles([]);
+        setIsMobileListOpen(remainingConversations.length === 0);
+      }
+    });
+
+    if (activeId === conversationId) {
+      router.replace(nextActiveId ? `/messages?conversation=${nextActiveId}` : "/messages");
+    }
+  });
+
   const handleStreamEvent = useEffectEvent((event: string, payload: unknown) => {
     if (event === "stream:ready") {
       setConnectionState("connected");
@@ -192,6 +226,11 @@ function MessagesContent() {
 
     if (event === "conversation:read") {
       applyReceipt(payload as ReadReceiptPayload);
+      return;
+    }
+
+    if (event === "conversation:deleted") {
+      applyConversationDeletion((payload as ConversationDeletedPayload).conversationId);
       return;
     }
 
@@ -243,6 +282,7 @@ function MessagesContent() {
     const controller = new AbortController();
 
     startTransition(() => setMessages([]));
+    setQueuedFiles([]);
     void loadMessages(activeId, controller.signal);
 
     return () => controller.abort();
@@ -336,19 +376,59 @@ function MessagesContent() {
     };
   }, [user?.id]);
 
+  const handleAttachmentSelection = (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    event.target.value = "";
+
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
+    const nextQueuedFiles = [...queuedFiles];
+    const selectionErrors: string[] = [];
+
+    for (const file of selectedFiles) {
+      if (file.size > MAX_ATTACHMENT_BYTES) {
+        selectionErrors.push(`${file.name} depasse 20 Mo.`);
+        continue;
+      }
+
+      const fileSignature = buildLocalFileSignature(file);
+      if (nextQueuedFiles.some((queuedFile) => buildLocalFileSignature(queuedFile) === fileSignature)) {
+        continue;
+      }
+
+      if (nextQueuedFiles.length >= MAX_ATTACHMENTS_PER_MESSAGE) {
+        selectionErrors.push(`Maximum ${MAX_ATTACHMENTS_PER_MESSAGE} pieces jointes par message.`);
+        break;
+      }
+
+      nextQueuedFiles.push(file);
+    }
+
+    setQueuedFiles(nextQueuedFiles);
+
+    if (selectionErrors.length > 0) {
+      setError(selectionErrors.join(" "));
+      return;
+    }
+
+    setError(null);
+  };
+
   const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!activeId || !text.trim()) return;
+    if (!activeId || (!text.trim() && queuedFiles.length === 0)) return;
 
     const content = text.trim();
 
     try {
       setError(null);
       setIsSending(true);
-      const message = await apiRequest<Message>(`/messages/conversations/${activeId}/messages`, {
-        method: "POST",
-        auth: true,
-        body: { content },
+      const message = await sendConversationMessage<Message>({
+        conversationId: activeId,
+        content,
+        attachments: queuedFiles,
       });
 
       startTransition(() => {
@@ -357,10 +437,40 @@ function MessagesContent() {
       });
 
       setText("");
+      setQueuedFiles([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Impossible d'envoyer le message");
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const deleteConversation = async () => {
+    if (!activeConversation) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Supprimer ce chat pour tous les participants ? Tous les messages et pieces jointes seront effaces de la base.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setError(null);
+      setIsDeletingConversation(true);
+      const payload = await apiRequest<ConversationDeletedPayload>(`/messages/conversations/${activeConversation.id}`, {
+        method: "DELETE",
+        auth: true,
+      });
+
+      applyConversationDeletion(payload.conversationId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Impossible de supprimer la conversation");
+    } finally {
+      setIsDeletingConversation(false);
     }
   };
 
@@ -369,6 +479,7 @@ function MessagesContent() {
   const totalUnread = conversations.reduce((count, conversation) => count + conversation.unreadCount, 0);
   const timeline = buildTimeline(messages);
   const filteredConversations = conversations.filter((conversation) => matchesConversation(conversation, deferredSearch, user?.id ?? null));
+  const canSendMessage = Boolean(text.trim() || queuedFiles.length > 0);
 
   return (
     <div className="w-full px-4 py-4 sm:px-5 sm:py-5 lg:px-6">
@@ -378,7 +489,7 @@ function MessagesContent() {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Chat deal flow en direct</p>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Messagerie instantanee, lecture en direct et fils negocies comme une vraie app de chat.</h1>
             <p className="mt-3 text-sm text-slate-700 sm:text-base">
-              Les nouveaux messages, la presence et les confirmations de lecture se synchronisent sans actualiser la page.
+              Les nouveaux messages, la presence, les confirmations de lecture et les pieces jointes chiffrees se synchronisent sans actualiser la page.
             </p>
           </div>
 
@@ -463,7 +574,7 @@ function MessagesContent() {
                             </div>
                             <div className="mt-2 flex items-center gap-2">
                               {lastMessage && lastMessage.sender.id === user?.id ? <MessageStateIcon isOwn readAt={lastMessage.readAt} /> : null}
-                              <p className="truncate text-sm text-slate-600">{lastMessage?.content ?? "Aucun message pour l'instant"}</p>
+                              <p className="truncate text-sm text-slate-600">{formatMessagePreview(lastMessage)}</p>
                             </div>
                           </div>
                         </div>
@@ -525,6 +636,18 @@ function MessagesContent() {
                           ) : null}
                         </div>
                       </div>
+
+                      <button
+                        type="button"
+                        onClick={deleteConversation}
+                        disabled={isDeletingConversation}
+                        data-testid="delete-conversation"
+                        className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 text-xs font-medium text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label="Supprimer ce chat"
+                      >
+                        {isDeletingConversation ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        <span className="hidden sm:inline">Supprimer</span>
+                      </button>
                     </div>
                   </header>
 
@@ -552,7 +675,51 @@ function MessagesContent() {
                   </div>
 
                   <form onSubmit={sendMessage} className="border-t border-slate-200 bg-white/95 px-3 py-2 backdrop-blur-sm sm:px-4 sm:py-2.5">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      data-testid="message-attachments-input"
+                      multiple
+                      accept={MESSAGE_ATTACHMENT_ACCEPT}
+                      onChange={handleAttachmentSelection}
+                      className="hidden"
+                    />
+
+                    {queuedFiles.length > 0 ? (
+                      <div className="mb-2 flex flex-wrap gap-2">
+                        {queuedFiles.map((file, index) => (
+                          <div
+                            key={buildLocalFileSignature(file)}
+                            className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600"
+                          >
+                            <span className="truncate">{file.name}</span>
+                            <span className="text-slate-400">{formatFileSize(file.size)}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setQueuedFiles((current) => current.filter((_, queuedIndex) => queuedIndex !== index));
+                              }}
+                              className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                              aria-label={`Retirer ${file.name}`}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
                     <div className="flex items-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        data-testid="message-attachments-trigger"
+                        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-teal-300 hover:text-teal-700"
+                        aria-label="Ajouter des pieces jointes"
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </button>
+
                       <label className="flex-1 rounded-[1.4rem] border border-slate-200 bg-slate-50 px-3 py-2 shadow-inner shadow-slate-200/20">
                         <textarea
                           aria-label="Ecrire un message"
@@ -573,7 +740,7 @@ function MessagesContent() {
                       <button
                         type="submit"
                         data-testid="send-message"
-                        disabled={isSending || !text.trim()}
+                        disabled={isSending || !canSendMessage}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isSending ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
@@ -581,7 +748,7 @@ function MessagesContent() {
                     </div>
 
                     <div className="mt-1.5 text-[11px] text-slate-500">
-                      <p>Entree pour envoyer, Maj + Entree pour une nouvelle ligne.</p>
+                      <p>Entree pour envoyer, Maj + Entree pour une nouvelle ligne. Jusqu'a 8 fichiers et 20 Mo par piece jointe.</p>
                     </div>
                   </form>
                 </>
@@ -641,7 +808,16 @@ function MessageBubble({ message, isOwn }: { message: Message; isOwn: boolean })
             : "border-slate-200 bg-white text-slate-900",
         )}
       >
-        <p className="text-sm leading-6 text-slate-800">{message.content}</p>
+        {message.content ? <p className="text-sm leading-6 text-slate-800">{message.content}</p> : null}
+
+        {message.attachments.length > 0 ? (
+          <div className={clsx("flex flex-col gap-2", message.content ? "mt-2" : null)}>
+            {message.attachments.map((attachment) => (
+              <MessageAttachmentCard key={attachment.id} attachment={attachment} />
+            ))}
+          </div>
+        ) : null}
+
         <div className="mt-1 flex items-center justify-end gap-1.5 text-[10px] text-slate-400">
           <span>{formatMessageTime(message.createdAt)}</span>
           <MessageStateIcon isOwn={isOwn} readAt={message.readAt} />
@@ -753,10 +929,11 @@ function matchesConversation(conversation: Conversation, search: string, current
   }
 
   const counterpart = getCounterparty(conversation, currentUserId);
-  const preview = conversation.messages[0]?.content ?? "";
+  const preview = formatMessagePreview(conversation.messages[0]);
   const listingTitle = conversation.listing?.title ?? "";
+  const attachmentNames = conversation.messages[0]?.attachments.map((attachment) => attachment.fileName).join(" ") ?? "";
 
-  return [counterpart.name, preview, listingTitle].some((value) => value.toLowerCase().includes(normalized));
+  return [counterpart.name, preview, listingTitle, attachmentNames].some((value) => value.toLowerCase().includes(normalized));
 }
 
 function buildTimeline(messages: Message[]): TimelineItem[] {
@@ -830,4 +1007,60 @@ function formatTimelineDay(value: string) {
     day: "numeric",
     month: "long",
   }).format(date);
+}
+
+function formatMessagePreview(message: Conversation["messages"][number] | Message | null | undefined) {
+  if (!message) {
+    return "Aucun message pour l'instant";
+  }
+
+  if (message.content.trim()) {
+    return message.content;
+  }
+
+  if (message.attachments.length === 0) {
+    return "Aucun message pour l'instant";
+  }
+
+  if (message.attachments.length === 1) {
+    return `${formatAttachmentCategory(message.attachments[0].category)} : ${message.attachments[0].fileName}`;
+  }
+
+  return `${message.attachments.length} pieces jointes`;
+}
+
+function buildLocalFileSignature(file: File) {
+  return `${file.name}:${file.size}:${file.lastModified}`;
+}
+
+function formatAttachmentCategory(category: "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT" | "OTHER") {
+  if (category === "IMAGE") {
+    return "Image";
+  }
+
+  if (category === "VIDEO") {
+    return "Video";
+  }
+
+  if (category === "AUDIO") {
+    return "Audio";
+  }
+
+  if (category === "DOCUMENT") {
+    return "Document";
+  }
+
+  return "Fichier";
+}
+
+function formatFileSize(sizeBytes: number) {
+  if (sizeBytes < 1024) {
+    return `${sizeBytes} o`;
+  }
+
+  if (sizeBytes < 1024 * 1024) {
+    return `${(sizeBytes / 1024).toFixed(1)} Ko`;
+  }
+
+  return `${(sizeBytes / (1024 * 1024)).toFixed(1)} Mo`;
 }

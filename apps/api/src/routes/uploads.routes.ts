@@ -1,38 +1,26 @@
-import fs from "node:fs";
-import path from "node:path";
 import { Router } from "express";
 import multer from "multer";
+import { prisma } from "../lib/prisma";
+import {
+  MAX_LISTING_IMAGE_BYTES,
+  MAX_LISTING_IMAGES,
+  buildListingImageUrl,
+  hashListingImageContent,
+  isSupportedListingImageMimeType,
+  sanitizeListingImageName,
+} from "../lib/listing-images";
 import { requireAuth } from "../middleware/auth";
 
 const router = Router();
 
-const uploadDirectory = path.resolve(__dirname, "../../uploads/listings");
-fs.mkdirSync(uploadDirectory, { recursive: true });
-
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, callback) => {
-      callback(null, uploadDirectory);
-    },
-    filename: (_req, file, callback) => {
-      const extension = path.extname(file.originalname).toLowerCase() || ".bin";
-      const baseName = path
-        .basename(file.originalname, extension)
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-zA-Z0-9-_]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 48) || "listing-image";
-
-      callback(null, `${Date.now()}-${baseName}${extension}`);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: {
-    files: 8,
-    fileSize: 5 * 1024 * 1024,
+    files: MAX_LISTING_IMAGES,
+    fileSize: MAX_LISTING_IMAGE_BYTES,
   },
   fileFilter: (_req, file, callback) => {
-    if (file.mimetype.startsWith("image/")) {
+    if (isSupportedListingImageMimeType(file.mimetype)) {
       callback(null, true);
       return;
     }
@@ -41,8 +29,25 @@ const upload = multer({
   },
 });
 
+router.get("/listing-images/:assetId", async (req, res) => {
+  const assetId = String(req.params.assetId);
+  const asset = await prisma.listingImageAsset.findUnique({ where: { id: assetId } });
+
+  if (!asset) {
+    return res.status(404).json({ message: "Image introuvable" });
+  }
+
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  res.setHeader("Content-Type", asset.mimeType);
+  res.setHeader("Content-Length", String(asset.sizeBytes));
+  res.setHeader("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(asset.fileName)}`);
+  res.setHeader("X-Content-Type-Options", "nosniff");
+
+  return res.end(Buffer.from(asset.blob));
+});
+
 router.post("/listing-images", requireAuth, (req, res) => {
-  upload.array("images", 8)(req, res, (error) => {
+  upload.array("images", MAX_LISTING_IMAGES)(req, res, async (error) => {
     if (error) {
       return res.status(400).json({ message: error.message || "Echec de l'upload des images" });
     }
@@ -53,10 +58,33 @@ router.post("/listing-images", requireAuth, (req, res) => {
       return res.status(400).json({ message: "Ajoutez au moins une image." });
     }
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
-    const urls = files.map((file) => `${baseUrl}/uploads/listings/${file.filename}`);
+    try {
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      const assets = await Promise.all(
+        files.map((file) =>
+          prisma.listingImageAsset.create({
+            data: {
+              ownerId: (req as typeof req & { user?: { userId: string } }).user!.userId,
+              fileName: sanitizeListingImageName(file.originalname),
+              mimeType: file.mimetype,
+              sizeBytes: file.size,
+              blob: file.buffer,
+              contentSha256: hashListingImageContent(file.buffer),
+            },
+          }),
+        ),
+      );
 
-    return res.status(201).json({ urls });
+      const urls = assets.map((asset) => buildListingImageUrl(baseUrl, asset.id));
+
+      return res.status(201).json({ urls });
+    } catch (error) {
+      if (error instanceof Error && error.message.trim()) {
+        return res.status(500).json({ message: error.message.trim() });
+      }
+
+      return res.status(500).json({ message: "Impossible d'enregistrer les images en base" });
+    }
   });
 });
 

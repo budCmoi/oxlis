@@ -37,6 +37,25 @@ export type User = {
   role: "BUYER" | "SELLER" | "BOTH";
 };
 
+export type MessageAttachment = {
+  id: string;
+  category: "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT" | "OTHER";
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: string;
+  downloadUrl: string;
+};
+
+export type ConversationMessagePreview = {
+  id: string;
+  content: string;
+  createdAt: string;
+  readAt: string | null;
+  sender: { id: string; name: string };
+  attachments: MessageAttachment[];
+};
+
 export type Conversation = {
   id: string;
   buyer: { id: string; name: string; online?: boolean };
@@ -44,7 +63,7 @@ export type Conversation = {
   listing?: { id: string; title: string };
   createdAt: string;
   unreadCount: number;
-  messages: Array<{ id: string; content: string; createdAt: string; readAt: string | null; sender: { id: string; name: string } }>;
+  messages: ConversationMessagePreview[];
 };
 
 export type Message = {
@@ -53,4 +72,5 @@ export type Message = {
   createdAt: string;
   readAt: string | null;
   sender: { id: string; name: string };
+  attachments: MessageAttachment[];
 };

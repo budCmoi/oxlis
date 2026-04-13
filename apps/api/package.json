@@ -9,8 +9,10 @@
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "node prisma/seed.js",
+    "prisma:seed:reset": "RESET_DATABASE=1 node prisma/seed.js",
     "smoke:db": "node scripts/real-db-smoke.js",
     "test:errors": "node scripts/real-db-error-cases.js"
   },
@@ -28,6 +30,7 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
     "multer": "^2.1.1",
+    "serverless-http": "^3.2.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

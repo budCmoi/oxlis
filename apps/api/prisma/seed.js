@@ -15,35 +15,59 @@ const galleries = {
   generic: ["/listing-generic.svg", "/listing-overview.svg", "/listing-diligence.svg"],
 };
 
+const shouldResetDatabase = process.env.RESET_DATABASE === "1";
+
 async function main() {
-  await prisma.message.deleteMany();
-  await prisma.conversation.deleteMany();
-  await prisma.escrowTransaction.deleteMany();
-  await prisma.offer.deleteMany();
-  await prisma.listing.deleteMany();
-  await prisma.user.deleteMany();
+  if (shouldResetDatabase) {
+    await prisma.messageAttachment.deleteMany();
+    await prisma.message.deleteMany();
+    await prisma.conversation.deleteMany();
+    await prisma.escrowTransaction.deleteMany();
+    await prisma.offer.deleteMany();
+    await prisma.listingImageAsset.deleteMany();
+    await prisma.listing.deleteMany();
+    await prisma.user.deleteMany();
+  }
 
   const passwordHash = await bcrypt.hash("password123", 10);
 
   const [seller, buyer, operator] = await Promise.all([
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: "seller@oxlis.dev" },
+      update: {
+        name: "Sofia Chen",
+        passwordHash,
+        role: "SELLER",
+      },
+      create: {
         name: "Sofia Chen",
         email: "seller@oxlis.dev",
         passwordHash,
         role: "SELLER",
       },
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: "buyer@oxlis.dev" },
+      update: {
+        name: "Marcus Reed",
+        passwordHash,
+        role: "BUYER",
+      },
+      create: {
         name: "Marcus Reed",
         email: "buyer@oxlis.dev",
         passwordHash,
         role: "BUYER",
       },
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: "operator@oxlis.dev" },
+      update: {
+        name: "Lina Ortega",
+        passwordHash,
+        role: "BOTH",
+      },
+      create: {
         name: "Lina Ortega",
         email: "operator@oxlis.dev",
         passwordHash,
@@ -417,8 +441,10 @@ async function main() {
 
   const createdListings = await Promise.all(
     listingDefinitions.map((data) =>
-      prisma.listing.create({
-        data,
+      prisma.listing.upsert({
+        where: { id: data.id },
+        update: data,
+        create: data,
       }),
     ),
   );
@@ -429,8 +455,17 @@ async function main() {
   const contentListing = listingById["finscope-media"];
 
   const [offerA, offerB, offerC] = await Promise.all([
-    prisma.offer.create({
-      data: {
+    prisma.offer.upsert({
+      where: { id: "offer-ai-primary" },
+      update: {
+        amount: 390000,
+        message: "Prepared to move quickly after access to cohort retention and CAC payback.",
+        status: "PENDING",
+        buyerId: buyer.id,
+        listingId: aiListing.id,
+      },
+      create: {
+        id: "offer-ai-primary",
         amount: 390000,
         message: "Prepared to move quickly after access to cohort retention and CAC payback.",
         status: "PENDING",
@@ -438,8 +473,17 @@ async function main() {
         listingId: aiListing.id,
       },
     }),
-    prisma.offer.create({
-      data: {
+    prisma.offer.upsert({
+      where: { id: "offer-commerce-accepted" },
+      update: {
+        amount: 301000,
+        message: "Interested in inventory turn and supplier concentration risk.",
+        status: "ACCEPTED",
+        buyerId: buyer.id,
+        listingId: commerceListing.id,
+      },
+      create: {
+        id: "offer-commerce-accepted",
         amount: 301000,
         message: "Interested in inventory turn and supplier concentration risk.",
         status: "ACCEPTED",
@@ -447,8 +491,17 @@ async function main() {
         listingId: commerceListing.id,
       },
     }),
-    prisma.offer.create({
-      data: {
+    prisma.offer.upsert({
+      where: { id: "offer-content-countered" },
+      update: {
+        amount: 185000,
+        message: "Would like to diligence traffic concentration before moving higher.",
+        status: "COUNTERED",
+        buyerId: operator.id,
+        listingId: contentListing.id,
+      },
+      create: {
+        id: "offer-content-countered",
         amount: 185000,
         message: "Would like to diligence traffic concentration before moving higher.",
         status: "COUNTERED",
@@ -458,54 +511,108 @@ async function main() {
     }),
   ]);
 
-  await prisma.escrowTransaction.create({
-    data: {
+  await prisma.escrowTransaction.upsert({
+    where: { offerId: offerB.id },
+    update: {
+      offerId: offerB.id,
+      amount: offerB.amount,
+      status: "FUNDED",
+    },
+    create: {
       offerId: offerB.id,
       amount: offerB.amount,
       status: "FUNDED",
     },
   });
 
-  const aiConversation = await prisma.conversation.create({
-    data: {
+  const aiConversation = await prisma.conversation.upsert({
+    where: { id: "conversation-ai-primary" },
+    update: {
+      buyerId: buyer.id,
+      sellerId: seller.id,
+      listingId: aiListing.id,
+    },
+    create: {
+      id: "conversation-ai-primary",
       buyerId: buyer.id,
       sellerId: seller.id,
       listingId: aiListing.id,
     },
   });
 
-  const commerceConversation = await prisma.conversation.create({
-    data: {
+  const commerceConversation = await prisma.conversation.upsert({
+    where: { id: "conversation-commerce-primary" },
+    update: {
+      buyerId: buyer.id,
+      sellerId: operator.id,
+      listingId: commerceListing.id,
+    },
+    create: {
+      id: "conversation-commerce-primary",
       buyerId: buyer.id,
       sellerId: operator.id,
       listingId: commerceListing.id,
     },
   });
 
-  await prisma.message.createMany({
-    data: [
-      {
+  await Promise.all([
+    prisma.message.upsert({
+      where: { id: "message-ai-1" },
+      update: {
         conversationId: aiConversation.id,
         senderId: buyer.id,
         content: "Can you share MRR by plan and the last six months of logo churn?",
       },
-      {
+      create: {
+        id: "message-ai-1",
+        conversationId: aiConversation.id,
+        senderId: buyer.id,
+        content: "Can you share MRR by plan and the last six months of logo churn?",
+      },
+    }),
+    prisma.message.upsert({
+      where: { id: "message-ai-2" },
+      update: {
         conversationId: aiConversation.id,
         senderId: seller.id,
         content: "Yes. I have a diligence pack ready with churn, CAC and activation data.",
       },
-      {
+      create: {
+        id: "message-ai-2",
+        conversationId: aiConversation.id,
+        senderId: seller.id,
+        content: "Yes. I have a diligence pack ready with churn, CAC and activation data.",
+      },
+    }),
+    prisma.message.upsert({
+      where: { id: "message-commerce-1" },
+      update: {
         conversationId: commerceConversation.id,
         senderId: buyer.id,
         content: "Is the accepted offer enough to reserve the asset while escrow is funded?",
       },
-      {
+      create: {
+        id: "message-commerce-1",
+        conversationId: commerceConversation.id,
+        senderId: buyer.id,
+        content: "Is the accepted offer enough to reserve the asset while escrow is funded?",
+      },
+    }),
+    prisma.message.upsert({
+      where: { id: "message-commerce-2" },
+      update: {
         conversationId: commerceConversation.id,
         senderId: operator.id,
         content: "Yes. The listing stays private while escrow is in funded state.",
       },
-    ],
-  });
+      create: {
+        id: "message-commerce-2",
+        conversationId: commerceConversation.id,
+        senderId: operator.id,
+        content: "Yes. The listing stays private while escrow is in funded state.",
+      },
+    }),
+  ]);
 
   console.log("Seed complete");
   console.log("Demo accounts:");

@@ -13,3 +13,6 @@ test-results/
 .postgres.log
 apps/api/.env
 apps/web/.env.local
+# Local Netlify folder
+.netlify
+apps/api/deno.lock

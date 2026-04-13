@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
@@ -40,20 +41,28 @@ router.post("/register", async (req, res) => {
     return res.status(409).json({ message: "Cet e-mail est deja utilise" });
   }
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      passwordHash,
-      role,
-    },
-  });
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        role,
+      },
+    });
 
-  return res.status(201).json({
-    token: issueToken(user),
-    user: { id: user.id, name: user.name, email: user.email, role: user.role },
-  });
+    return res.status(201).json({
+      token: issueToken(user),
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return res.status(409).json({ message: "Cet e-mail est deja utilise" });
+    }
+
+    throw error;
+  }
 });
 
 router.post("/login", async (req, res) => {
@@ -68,12 +77,12 @@ router.post("/login", async (req, res) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
-    return res.status(401).json({ message: "Identifiants invalides" });
+    return res.status(404).json({ message: "Aucun compte n'est associe a cet e-mail" });
   }
 
   const passwordMatch = await bcrypt.compare(password, user.passwordHash);
   if (!passwordMatch) {
-    return res.status(401).json({ message: "Identifiants invalides" });
+    return res.status(401).json({ message: "Mot de passe incorrect" });
   }
 
   return res.json({

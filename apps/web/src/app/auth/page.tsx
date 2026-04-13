@@ -29,6 +29,7 @@ function AuthContent() {
   });
 
   const nextPath = searchParams.get("next") || "/dashboard";
+  const isStatusError = status !== null && !status.startsWith("Authentification reussie");
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -139,7 +140,11 @@ function AuthContent() {
             </button>
           </form>
 
-          {status ? <p className="mt-4 text-sm text-slate-600">{status}</p> : null}
+          {status ? (
+            <p className={`mt-4 rounded-xl px-4 py-3 text-sm ${isStatusError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
+              {status}
+            </p>
+          ) : null}
         </section>
       </div>
     </div>
