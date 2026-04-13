@@ -1,0 +1,15 @@
+node_modules/
+apps/api/node_modules/
+apps/web/node_modules/
+.npm-cache/
+apps/api/.npm-cache/
+apps/api/dist/
+apps/api/uploads/
+apps/web/.next/
+playwright-report/
+test-results/
+.vscode/
+.DS_Store
+.postgres.log
+apps/api/.env
+apps/web/.env.local

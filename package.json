@@ -1,0 +1,25 @@
+{
+  "name": "oxlis",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marketplace for buying and selling digital businesses",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm run dev --prefix apps/web",
+    "dev:api": "npm run dev --prefix apps/api",
+    "build:web": "npm run build --prefix apps/web",
+    "build:api": "npm run build --prefix apps/api",
+    "smoke:db": "npm run smoke:db --prefix apps/api",
+    "test:errors": "npm run test:errors --prefix apps/api",
+    "build:web:e2e": "NEXT_PUBLIC_API_URL=http://127.0.0.1:4100/api npm run build --prefix apps/web",
+    "pretest:e2e": "npm run build:api && npm run build:web:e2e",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "concurrently": "^9.2.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

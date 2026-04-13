@@ -1,0 +1,35 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1000" rx="40" fill="url(#bg)"/>
+  <circle cx="1340" cy="176" r="192" fill="#0EA5E9" fill-opacity="0.16"/>
+  <circle cx="234" cy="786" r="252" fill="#A78BFA" fill-opacity="0.12"/>
+  <rect x="88" y="92" width="1424" height="816" rx="38" fill="#0F172A" fill-opacity="0.9"/>
+  <rect x="130" y="136" width="1340" height="94" rx="24" fill="#111827"/>
+  <rect x="170" y="170" width="238" height="22" rx="11" fill="#F8FAFC" fill-opacity="0.94"/>
+  <rect x="130" y="266" width="1340" height="596" rx="30" fill="#111827"/>
+  <rect x="170" y="306" width="410" height="516" rx="28" fill="#F8FAFC"/>
+  <rect x="206" y="344" width="338" height="188" rx="24" fill="#DBEAFE"/>
+  <rect x="242" y="384" width="108" height="108" rx="30" fill="#BFDBFE"/>
+  <rect x="376" y="394" width="132" height="16" rx="8" fill="#0F172A" fill-opacity="0.84"/>
+  <rect x="376" y="426" width="96" height="12" rx="6" fill="#64748B"/>
+  <rect x="206" y="582" width="338" height="204" rx="24" fill="#EEF2FF"/>
+  <rect x="238" y="616" width="148" height="18" rx="9" fill="#0F172A" fill-opacity="0.84"/>
+  <rect x="238" y="660" width="274" height="16" rx="8" fill="#CBD5E1"/>
+  <rect x="238" y="692" width="248" height="16" rx="8" fill="#CBD5E1"/>
+  <rect x="618" y="306" width="814" height="244" rx="28" fill="#F8FAFC"/>
+  <rect x="656" y="344" width="214" height="18" rx="9" fill="#0F172A" fill-opacity="0.84"/>
+  <rect x="656" y="388" width="738" height="16" rx="8" fill="#CBD5E1"/>
+  <rect x="656" y="422" width="676" height="16" rx="8" fill="#CBD5E1"/>
+  <rect x="656" y="456" width="244" height="14" rx="7" fill="#64748B"/>
+  <rect x="618" y="590" width="814" height="232" rx="28" fill="#F8FAFC"/>
+  <rect x="656" y="628" width="184" height="18" rx="9" fill="#0F172A" fill-opacity="0.84"/>
+  <rect x="656" y="676" width="214" height="112" rx="24" fill="#E0F2FE"/>
+  <rect x="894" y="676" width="214" height="112" rx="24" fill="#EDE9FE"/>
+  <rect x="1132" y="676" width="264" height="112" rx="24" fill="#DCFCE7"/>
+  <defs>
+    <linearGradient id="bg" x1="80" y1="56" x2="1514" y2="946" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFF6FF"/>
+      <stop offset="0.48" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#EEF2FF"/>
+    </linearGradient>
+  </defs>
+</svg>

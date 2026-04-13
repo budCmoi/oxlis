@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUYER
+  SELLER
+  BOTH
+}
+
+enum ListingStatus {
+  ACTIVE
+  SOLD
+  DRAFT
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COUNTERED
+}
+
+enum EscrowStatus {
+  INITIATED
+  FUNDED
+  RELEASED
+  CANCELLED
+}
+
+model User {
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  passwordHash   String
+  role           UserRole       @default(BOTH)
+  listings       Listing[]
+  offers         Offer[]
+  sentMessages   Message[]      @relation("SentMessages")
+  conversationsA Conversation[] @relation("ConversationBuyer")
+  conversationsB Conversation[] @relation("ConversationSeller")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Listing {
+  id             String        @id @default(cuid())
+  title          String
+  summary        String
+  description    String
+  imageUrls      String[]      @default([])
+  niche          String
+  type           String
+  askingPrice    Float
+  monthlyRevenue Float
+  monthlyProfit  Float
+  techStack      String[]
+  status         ListingStatus @default(ACTIVE)
+  ownerId        String
+  owner          User          @relation(fields: [ownerId], references: [id])
+  offers         Offer[]
+  conversations  Conversation[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([niche, type])
+  @@index([askingPrice])
+}
+
+model Offer {
+  id            String    @id @default(cuid())
+  amount        Float
+  message       String?
+  status        OfferStatus @default(PENDING)
+  buyerId       String
+  buyer         User      @relation(fields: [buyerId], references: [id])
+  listingId     String
+  listing       Listing   @relation(fields: [listingId], references: [id])
+  escrow        EscrowTransaction?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([buyerId, listingId])
+}
+
+model Conversation {
+  id         String    @id @default(cuid())
+  listingId  String?
+  listing    Listing?  @relation(fields: [listingId], references: [id])
+  buyerId    String
+  buyer      User      @relation("ConversationBuyer", fields: [buyerId], references: [id])
+  sellerId   String
+  seller     User      @relation("ConversationSeller", fields: [sellerId], references: [id])
+  messages   Message[]
+  createdAt  DateTime  @default(now())
+
+  @@unique([buyerId, sellerId, listingId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       String
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  content        String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+model EscrowTransaction {
+  id         String       @id @default(cuid())
+  offerId    String       @unique
+  offer      Offer        @relation(fields: [offerId], references: [id])
+  amount     Float
+  status     EscrowStatus @default(INITIATED)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
