@@ -33,8 +33,6 @@ services:
         sync: false
       - key: FIREBASE_PROJECT_ID
         sync: false
-      - key: APPLE_CLIENT_ID
-        sync: false
   - type: web
     name: oxlis-web
     runtime: node
@@ -61,8 +59,4 @@ services:
       - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
         sync: false
       - key: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-        sync: false
-      - key: NEXT_PUBLIC_APPLE_CLIENT_ID
-        sync: false
-      - key: NEXT_PUBLIC_APPLE_REDIRECT_URI
         sync: false

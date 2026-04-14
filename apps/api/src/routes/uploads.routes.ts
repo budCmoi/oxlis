@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Request, Router } from "express";
 import multer from "multer";
 import { prisma } from "../lib/prisma";
 import {
@@ -29,8 +29,20 @@ const upload = multer({
   },
 });
 
+function getForwardedHeaderValue(value: string | undefined) {
+  return value?.split(",")[0]?.trim() || null;
+}
+
+function resolvePublicApiBaseUrl(req: Request) {
+  const protocol = getForwardedHeaderValue(req.get("x-forwarded-proto") ?? undefined) ?? req.protocol;
+  const host = getForwardedHeaderValue(req.get("x-forwarded-host") ?? undefined) ?? req.get("host");
+
+  return host ? `${protocol}://${host}` : "";
+}
+
 router.get("/listing-images/:assetId", async (req, res) => {
   const assetId = String(req.params.assetId);
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
   const asset = await prisma.listingImageAsset.findUnique({ where: { id: assetId } });
 
   if (!asset) {
@@ -59,7 +71,7 @@ router.post("/listing-images", requireAuth, (req, res) => {
     }
 
     try {
-      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      const baseUrl = resolvePublicApiBaseUrl(req);
       const assets = await Promise.all(
         files.map((file) =>
           prisma.listingImageAsset.create({

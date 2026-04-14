@@ -14,6 +14,45 @@ type ListingVisualInput = {
   imageUrls?: string[];
 };
 
+const configuredApiOrigin = resolveConfiguredApiOrigin();
+
+function resolveConfiguredApiOrigin() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (!apiUrl) {
+    return null;
+  }
+
+  try {
+    return new URL(apiUrl).origin;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeListingImageSrc(src: string) {
+  if (!configuredApiOrigin || !src.startsWith("http://")) {
+    return src;
+  }
+
+  try {
+    const apiOrigin = new URL(configuredApiOrigin);
+    if (apiOrigin.protocol !== "https:") {
+      return src;
+    }
+
+    const parsedSrc = new URL(src);
+    if (parsedSrc.protocol !== "http:" || parsedSrc.host !== apiOrigin.host) {
+      return src;
+    }
+
+    parsedSrc.protocol = "https:";
+    return parsedSrc.toString();
+  } catch {
+    return src;
+  }
+}
+
 function getCustomSlides(input: ListingVisualInput): ListingVisual[] | null {
   if (!input.imageUrls || input.imageUrls.length === 0) {
     return null;
@@ -55,7 +94,7 @@ function getCustomSlides(input: ListingVisualInput): ListingVisual[] | null {
     };
 
     return {
-      src,
+      src: normalizeListingImageSrc(src),
       label: fallback.label,
       title: fallback.title,
       caption: fallback.caption,

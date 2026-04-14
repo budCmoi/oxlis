@@ -45,7 +45,7 @@ cp apps/web/.env.local.example apps/web/.env.local
 
 Set a dedicated `ATTACHMENTS_ENCRYPTION_KEY` in `apps/api/.env` for production-grade chat attachment encryption at rest.
 
-If you want Google or Apple sign-in, you can either use the direct provider client ids (`GOOGLE_CLIENT_ID`, `APPLE_CLIENT_ID`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_APPLE_CLIENT_ID`, `NEXT_PUBLIC_APPLE_REDIRECT_URI`) or configure `FIREBASE_PROJECT_ID` in `apps/api/.env` with the `NEXT_PUBLIC_FIREBASE_*` values in `apps/web/.env.local`.
+If you want Google sign-in, you can either use the direct provider client id (`GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`) or configure `FIREBASE_PROJECT_ID` in `apps/api/.env` with the `NEXT_PUBLIC_FIREBASE_*` values in `apps/web/.env.local`.
 
 3. Start PostgreSQL
 
@@ -122,7 +122,6 @@ Why this path:
 - `CLIENT_URL`
 - `GOOGLE_CLIENT_ID`
 - `FIREBASE_PROJECT_ID`
-- `APPLE_CLIENT_ID`
 
 5. Provide these frontend environment variables:
 
@@ -135,14 +134,11 @@ Why this path:
 - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
 - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 - `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
-- `NEXT_PUBLIC_APPLE_CLIENT_ID`
-- `NEXT_PUBLIC_APPLE_REDIRECT_URI`
 
 6. After the first deploy, update the cross-service URLs if needed:
 
 - set `CLIENT_URL` on `oxlis-api` to the public frontend origin, for example `https://oxlis-web.onrender.com`
 - set `NEXT_PUBLIC_API_URL` on `oxlis-web` to the public API base URL, for example `https://oxlis-api.onrender.com/api`
-- set `NEXT_PUBLIC_APPLE_REDIRECT_URI` to the frontend auth page, for example `https://oxlis-web.onrender.com/auth`
 
 7. Redeploy both services after those URL values are in place.
 
@@ -151,7 +147,7 @@ Notes:
 - `JWT_SECRET` and `ATTACHMENTS_ENCRYPTION_KEY` are generated automatically by the Render blueprint for the API service
 - `DATABASE_URL` is injected automatically from the `oxlis-db` Render Postgres instance
 - on Render Free, `preDeployCommand` is not available, so the API service runs `npm run prisma:migrate:deploy && npm start` as its start command
-- Google and Apple sign-in can use either direct provider configuration or Firebase Auth, and both flows are linked to users through Prisma `SocialAccount` rows
+- Google sign-in can use either direct provider configuration or Firebase Auth, and the flow is linked to users through Prisma `SocialAccount` rows
 - Render Free services spin down after inactivity, so the first request after idle can take around a minute
 - Render Free Postgres expires after 30 days, and each workspace can only have one active free Render Postgres database
 
@@ -219,7 +215,6 @@ The repository includes a GitHub Actions workflow that:
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/google`
-- `POST /api/auth/apple`
 - `GET /api/auth/me`
 - `GET /api/listings`
 - `GET /api/listings/:id`

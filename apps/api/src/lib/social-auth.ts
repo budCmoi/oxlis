@@ -1,7 +1,7 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { env } from "../config/env";
 
-export type SocialProvider = "google" | "apple";
+export type SocialProvider = "google";
 
 export type VerifiedSocialIdentity = {
   provider: SocialProvider;
@@ -9,8 +9,6 @@ export type VerifiedSocialIdentity = {
   email: string;
   name: string;
 };
-
-type SupportedFirebaseProvider = "google.com" | "apple.com";
 
 type GoogleTokenInfoResponse = {
   aud?: string;
@@ -33,7 +31,6 @@ type GoogleUserInfoResponse = {
 const firebaseJwks = createRemoteJWKSet(
   new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"),
 );
-const appleJwks = createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
 
 function getFirebaseIssuer(projectId: string) {
   return `https://securetoken.google.com/${projectId}`;
@@ -54,29 +51,6 @@ function buildDefaultName(email: string, fallback: string) {
 
 function getObjectRecord(value: unknown) {
   return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
-}
-
-function getJwtPayload(idToken: string) {
-  const [, encodedPayload] = idToken.split(".");
-
-  if (!encodedPayload) {
-    throw new Error("Jeton social invalide");
-  }
-
-  const normalized = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
-  const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
-  const json = Buffer.from(`${normalized}${padding}`, "base64").toString("utf8");
-
-  return JSON.parse(json) as Record<string, unknown>;
-}
-
-export function detectIdentityTokenIssuer(idToken: string) {
-  try {
-    const payload = getJwtPayload(idToken);
-    return typeof payload.iss === "string" ? payload.iss : null;
-  } catch {
-    return null;
-  }
 }
 
 async function fetchJson<T>(input: string | URL, init?: RequestInit) {
@@ -147,27 +121,16 @@ export async function verifyGoogleAccessToken(accessToken: string): Promise<Veri
   };
 }
 
-function getFirebaseProviderLabel(provider: SupportedFirebaseProvider) {
-  return provider === "google.com" ? "Google" : "Apple";
-}
-
-function getFirebaseProviderFallback(provider: SupportedFirebaseProvider) {
-  return provider === "google.com" ? "Utilisateur Google" : "Utilisateur Apple";
-}
-
-async function verifyFirebaseIdentityToken(
-  idToken: string,
-  expectedProvider: SupportedFirebaseProvider,
-): Promise<VerifiedSocialIdentity> {
+export async function verifyGoogleFirebaseToken(idToken: string): Promise<VerifiedSocialIdentity> {
   if (!env.FIREBASE_PROJECT_ID) {
-    throw new Error("La connexion sociale n'est pas configuree sur le serveur");
+    throw new Error("La connexion Google n'est pas configuree sur le serveur");
   }
 
   const { payload } = await jwtVerify(idToken, firebaseJwks, {
     issuer: getFirebaseIssuer(env.FIREBASE_PROJECT_ID),
     audience: env.FIREBASE_PROJECT_ID,
   }).catch(() => {
-    throw new Error(`Jeton ${getFirebaseProviderLabel(expectedProvider)} invalide`);
+    throw new Error("Jeton Google invalide");
   });
 
   const email = normalizeEmail(payload.email);
@@ -188,26 +151,18 @@ async function verifyFirebaseIdentityToken(
   const firebasePayload = getObjectRecord(payload.firebase);
   const providerId = typeof firebasePayload?.sign_in_provider === "string" ? firebasePayload.sign_in_provider.trim() : "";
 
-  if (providerId !== expectedProvider) {
-    throw new Error(`Ce jeton n'est pas issu d'une connexion ${getFirebaseProviderLabel(expectedProvider)}`);
+  if (providerId !== "google.com") {
+    throw new Error("Ce jeton n'est pas issu d'une connexion Google");
   }
 
   const name = typeof payload.name === "string" ? payload.name.trim() : "";
 
   return {
-    provider: expectedProvider === "google.com" ? "google" : "apple",
+    provider: "google",
     providerUserId,
     email,
-    name: name || buildDefaultName(email, getFirebaseProviderFallback(expectedProvider)),
+    name: name || buildDefaultName(email, "Utilisateur Google"),
   };
-}
-
-export async function verifyGoogleFirebaseToken(idToken: string): Promise<VerifiedSocialIdentity> {
-  return verifyFirebaseIdentityToken(idToken, "google.com");
-}
-
-export async function verifyAppleFirebaseToken(idToken: string): Promise<VerifiedSocialIdentity> {
-  return verifyFirebaseIdentityToken(idToken, "apple.com");
 }
 
 export async function verifyGoogleSignIn({
@@ -218,15 +173,18 @@ export async function verifyGoogleSignIn({
   idToken?: string;
 }): Promise<VerifiedSocialIdentity> {
   const normalizedAccessToken = accessToken?.trim() || "";
+  const normalizedIdToken = idToken?.trim() || "";
 
-  if (normalizedAccessToken) {
+  if (normalizedAccessToken && env.GOOGLE_CLIENT_ID) {
     return verifyGoogleAccessToken(normalizedAccessToken);
   }
 
-  const normalizedIdToken = idToken?.trim() || "";
-
   if (normalizedIdToken) {
     return verifyGoogleFirebaseToken(normalizedIdToken);
+  }
+
+  if (normalizedAccessToken) {
+    return verifyGoogleAccessToken(normalizedAccessToken);
   }
 
   if (!env.GOOGLE_CLIENT_ID && !env.FIREBASE_PROJECT_ID) {
@@ -234,56 +192,4 @@ export async function verifyGoogleSignIn({
   }
 
   throw new Error("Jeton Google invalide");
-}
-
-export async function verifyAppleIdentityToken(idToken: string): Promise<VerifiedSocialIdentity> {
-  if (!env.APPLE_CLIENT_ID) {
-    throw new Error("La connexion Apple n'est pas configuree sur le serveur");
-  }
-
-  const { payload } = await jwtVerify(idToken, appleJwks, {
-    issuer: "https://appleid.apple.com",
-    audience: env.APPLE_CLIENT_ID,
-  }).catch(() => {
-    throw new Error("Jeton Apple invalide");
-  });
-
-  const providerUserId = typeof payload.sub === "string" ? payload.sub.trim() : "";
-  const email = normalizeEmail(payload.email);
-  const name = typeof payload.name === "string" ? payload.name.trim() : "";
-  const emailVerified = parseBooleanLike(payload.email_verified);
-
-  if (!providerUserId || !email) {
-    throw new Error("Le jeton Apple ne contient pas d'identite exploitable");
-  }
-
-  if (!emailVerified) {
-    throw new Error("Le compte Apple doit avoir une adresse e-mail verifiee");
-  }
-
-  return {
-    provider: "apple",
-    providerUserId,
-    email,
-    name: name || buildDefaultName(email, "Utilisateur Apple"),
-  };
-}
-
-export async function verifyAppleSignIn(idToken: string): Promise<VerifiedSocialIdentity> {
-  const normalizedIdToken = idToken.trim();
-  const issuer = detectIdentityTokenIssuer(normalizedIdToken);
-
-  if (issuer === "https://appleid.apple.com") {
-    return verifyAppleIdentityToken(normalizedIdToken);
-  }
-
-  if (env.FIREBASE_PROJECT_ID) {
-    return verifyAppleFirebaseToken(normalizedIdToken);
-  }
-
-  if (env.APPLE_CLIENT_ID) {
-    return verifyAppleIdentityToken(normalizedIdToken);
-  }
-
-  throw new Error("La connexion Apple n'est pas configuree sur le serveur");
 }

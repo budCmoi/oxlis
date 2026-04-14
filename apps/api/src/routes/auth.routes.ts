@@ -4,7 +4,7 @@ import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../config/env";
-import { verifyAppleSignIn, verifyGoogleSignIn } from "../lib/social-auth";
+import { verifyGoogleSignIn } from "../lib/social-auth";
 import { prisma } from "../lib/prisma";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 
@@ -34,12 +34,6 @@ const googleLoginSchema = z
     path: ["accessToken"],
   });
 
-const appleLoginSchema = z.object({
-  idToken: z.string().min(1),
-  role: z.enum(["BUYER", "SELLER", "BOTH"]).optional(),
-  name: z.string().trim().min(2).max(120).optional(),
-});
-
 const issueToken = (user: { id: string; email: string }) =>
   jwt.sign({ userId: user.id, email: user.email }, env.JWT_SECRET, {
     expiresIn: "7d",
@@ -60,45 +54,40 @@ function buildSocialOnlyPasswordMarker() {
   return "oauth:social-only";
 }
 
-function getProviderLabel(provider: SocialAuthProvider) {
-  return provider === SocialAuthProvider.GOOGLE ? "Google" : "Apple";
-}
-
-function getSocialProviderLabels(accounts: Array<{ provider: SocialAuthProvider }>) {
-  return [...new Set(accounts.map((account) => getProviderLabel(account.provider)))];
-}
-
 function buildSocialLoginMessage(accounts: Array<{ provider: SocialAuthProvider }>) {
-  const labels = getSocialProviderLabels(accounts);
+  const hasGoogle = accounts.some((account) => account.provider === SocialAuthProvider.GOOGLE);
+  const hasApple = accounts.some((account) => account.provider === SocialAuthProvider.APPLE);
 
-  if (labels.length === 0) {
+  if (hasGoogle) {
+    return "Ce compte utilise Google. Utilisez Continuer avec Google.";
+  }
+
+  if (hasApple) {
+    return "Ce compte a ete cree avec Apple. Cette connexion n'est plus disponible sur OXLIS.";
+  }
+
+  if (accounts.length === 0) {
     return "Ce compte utilise une connexion sociale. Utilisez un fournisseur social pour vous connecter.";
   }
 
-  if (labels.length === 1) {
-    return `Ce compte utilise ${labels[0]}. Utilisez Continuer avec ${labels[0]}.`;
-  }
-
-  return "Ce compte utilise Google et Apple. Utilisez l'un de ces deux boutons pour vous connecter.";
+  return "Ce compte utilise une connexion sociale. Utilisez Continuer avec Google.";
 }
 
-async function completeSocialLogin({
-  provider,
+async function completeGoogleLogin({
   providerUserId,
   email,
   identityName,
   role,
   name,
 }: {
-  provider: "google" | "apple";
   providerUserId: string;
   email: string;
   identityName: string;
   role?: "BUYER" | "SELLER" | "BOTH";
   name?: string;
 }) {
-  const providerEnum = provider === "google" ? SocialAuthProvider.GOOGLE : SocialAuthProvider.APPLE;
-  const providerLabel = provider === "google" ? "Google" : "Apple";
+  const providerEnum = SocialAuthProvider.GOOGLE;
+  const providerLabel = "Google";
   const socialAccount = await prisma.socialAccount.findUnique({
     where: {
       provider_providerUserId: {
@@ -305,8 +294,7 @@ router.post("/google", async (req, res) => {
     });
 
     return res.json(
-      await completeSocialLogin({
-        provider: identity.provider,
+      await completeGoogleLogin({
         providerUserId: identity.providerUserId,
         email: identity.email,
         identityName: identity.name,
@@ -316,32 +304,6 @@ router.post("/google", async (req, res) => {
     );
   } catch (error) {
     const message = error instanceof Error && error.message.trim() ? error.message.trim() : "Jeton Google invalide";
-    const statusCode = message.includes("pas configuree") ? 503 : message.includes("deja lie") ? 409 : 401;
-    return res.status(statusCode).json({ message });
-  }
-});
-
-router.post("/apple", async (req, res) => {
-  const parsed = appleLoginSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ message: "Payload invalide", errors: parsed.error.issues });
-  }
-
-  try {
-    const identity = await verifyAppleSignIn(parsed.data.idToken);
-
-    return res.json(
-      await completeSocialLogin({
-        provider: identity.provider,
-        providerUserId: identity.providerUserId,
-        email: identity.email,
-        identityName: parsed.data.name?.trim() || identity.name,
-        role: parsed.data.role,
-        name: parsed.data.name,
-      }),
-    );
-  } catch (error) {
-    const message = error instanceof Error && error.message.trim() ? error.message.trim() : "Jeton Apple invalide";
     const statusCode = message.includes("pas configuree") ? 503 : message.includes("deja lie") ? 409 : 401;
     return res.status(statusCode).json({ message });
   }
