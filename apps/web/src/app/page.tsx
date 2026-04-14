@@ -75,7 +75,7 @@ export default function HomePage() {
     <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
       <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-11">
         <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Plateforme d'acquisition digitale</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Plateforme d&apos;acquisition digitale</p>
           <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
             Achetez et vendez des entreprises numeriques rentables en toute confiance.
           </h1>
@@ -95,7 +95,7 @@ export default function HomePage() {
 
       <section className="mt-4 grid gap-4 sm:mt-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {listings.map((listing) => (
-          <div key={listing.id} className="h-full">
+          <div key={listing.id} className="h-full min-w-0">
             <ListingCard listing={listing} />
           </div>
         ))}

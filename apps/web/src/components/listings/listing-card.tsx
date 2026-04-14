@@ -12,11 +12,15 @@ export function ListingCard({ listing }: Props) {
   const displayMeta = truncateText(`${listing.niche} · ${listing.type}`, 32);
   const displayTitle = truncateText(listing.title, 23);
   const displaySummary = truncateText(listing.summary, 50);
+  const askingPrice = formatCurrency(listing.askingPrice);
+  const monthlyRevenue = `${formatCurrency(listing.monthlyRevenue)}/mo`;
+  const monthlyProfit = `${formatCurrency(listing.monthlyProfit)}/mo`;
+  const offersCount = `${formatCompact(listing._count?.offers ?? 0)} offres`;
 
   return (
     <article
       data-testid={`listing-card-${listing.id}`}
-      className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-5"
+      className="group flex h-full min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-5"
     >
       <ListingVisual listing={listing} />
 
@@ -35,28 +39,36 @@ export function ListingCard({ listing }: Props) {
         <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{formatListingStatus(listing.status)}</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-4 text-sm">
-        <div className="flex items-center gap-2 text-slate-700">
-          <DollarSign className="h-4 w-4 text-teal-600" />
-          <span>{formatCurrency(listing.askingPrice)}</span>
+      <div className="grid grid-cols-1 gap-3 rounded-xl bg-slate-50 p-4 text-sm sm:grid-cols-2">
+        <div className="flex min-w-0 items-center gap-2 text-slate-700">
+          <DollarSign className="h-4 w-4 shrink-0 text-teal-600" />
+          <span title={askingPrice} className="min-w-0 truncate">
+            {askingPrice}
+          </span>
         </div>
-        <div className="flex items-center gap-2 text-slate-700">
-          <TrendingUp className="h-4 w-4 text-teal-600" />
-          <span>{formatCurrency(listing.monthlyRevenue)}/mo</span>
+        <div className="flex min-w-0 items-center gap-2 text-slate-700">
+          <TrendingUp className="h-4 w-4 shrink-0 text-teal-600" />
+          <span title={monthlyRevenue} className="min-w-0 truncate">
+            {monthlyRevenue}
+          </span>
         </div>
-        <div className="flex items-center gap-2 text-slate-700">
-          <Activity className="h-4 w-4 text-teal-600" />
-          <span>{formatCurrency(listing.monthlyProfit)}/mo</span>
+        <div className="flex min-w-0 items-center gap-2 text-slate-700">
+          <Activity className="h-4 w-4 shrink-0 text-teal-600" />
+          <span title={monthlyProfit} className="min-w-0 truncate">
+            {monthlyProfit}
+          </span>
         </div>
-        <div className="flex items-center gap-2 text-slate-700">
-          <Layers className="h-4 w-4 text-teal-600" />
-          <span>{formatCompact(listing._count?.offers ?? 0)} offres</span>
+        <div className="flex min-w-0 items-center gap-2 text-slate-700">
+          <Layers className="h-4 w-4 shrink-0 text-teal-600" />
+          <span title={offersCount} className="min-w-0 truncate">
+            {offersCount}
+          </span>
         </div>
       </div>
 
       <div className="mt-4 flex min-h-[3.5rem] flex-wrap content-start gap-2">
         {listing.techStack.slice(0, 3).map((item) => (
-          <span key={item} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+          <span key={item} title={item} className="max-w-full truncate rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
             {item}
           </span>
         ))}
