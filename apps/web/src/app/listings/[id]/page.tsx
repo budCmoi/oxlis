@@ -193,11 +193,11 @@ export default function ListingDetailPage() {
               <span className="text-slate-400">•</span>
               <span>{formatListingStatus(listing.status)}</span>
             </div>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">{listing.title}</h1>
-            <p className="mt-4 text-base text-slate-700 sm:text-lg">{listing.summary}</p>
+            <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">{listing.title}</h1>
+            <p className="mt-4 text-sm leading-6 text-slate-700 sm:text-base lg:text-lg">{listing.summary}</p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[460px]">
+          <div className="grid w-full gap-3 sm:grid-cols-2 xl:max-w-[460px] xl:min-w-0">
             {heroMetrics.map((item) => (
               <div key={item.label} className="rounded-2xl border border-white/60 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-sm">
                 <p className="text-xs uppercase tracking-[0.12em] text-slate-500">{item.label}</p>
@@ -208,7 +208,7 @@ export default function ListingDetailPage() {
         </div>
       </section>
 
-      <div className="mt-4 grid gap-4 sm:mt-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.82fr)] xl:items-start">
+      <div className="mt-4 grid gap-4 sm:mt-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.82fr)] xl:items-start">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="mb-6">
             <ListingGallery listing={listing} />
@@ -313,9 +313,9 @@ function DetailCard({
   description: string;
 }) {
   return (
-    <div className="flex h-full min-h-[172px] flex-col rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+    <div className="flex h-full min-h-[154px] flex-col rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:min-h-[172px]">
       <p className="text-xs uppercase tracking-[0.1em] text-slate-500">{label}</p>
-      <p className="mt-2 line-clamp-3 min-h-[4.5rem] text-base font-semibold leading-6 text-slate-900">{value}</p>
+      <p className="mt-2 line-clamp-3 min-h-[4rem] text-sm font-semibold leading-6 text-slate-900 sm:min-h-[4.5rem] sm:text-base">{value}</p>
       <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{description}</p>
     </div>
   );

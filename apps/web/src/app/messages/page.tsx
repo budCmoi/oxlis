@@ -487,13 +487,13 @@ function MessagesContent() {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Chat deal flow en direct</p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Messagerie instantanee, lecture en direct et fils negocies comme une vraie app de chat.</h1>
-            <p className="mt-3 text-sm text-slate-700 sm:text-base">
+            <h1 className="mt-2 text-xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">Messagerie instantanee, lecture en direct et fils negocies comme une vraie app de chat.</h1>
+            <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base">
               Les nouveaux messages, la presence, les confirmations de lecture et les pieces jointes chiffrees se synchronisent sans actualiser la page.
             </p>
           </div>
 
-          <div className="grid gap-3 self-end sm:grid-cols-2 xl:ml-auto xl:min-w-[460px]">
+          <div className="grid w-full gap-3 self-start sm:grid-cols-2 xl:ml-auto xl:max-w-[460px] xl:min-w-0">
             <MetricCard label="Fils" value={`${conversations.length}`} helper="Tous vos deals ouverts" />
             <MetricCard label="Non lus" value={`${totalUnread}`} helper="Badges en direct" />
           </div>
@@ -506,10 +506,10 @@ function MessagesContent() {
 
       {conversations.length > 0 ? (
         <div className="mt-4 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_24px_90px_-46px_rgba(15,23,42,0.45)] sm:mt-5">
-          <div className="grid h-[72vh] min-h-[540px] md:grid-cols-[360px_minmax(0,1fr)]">
+          <div className="grid h-[72dvh] max-h-[840px] min-h-[420px] sm:min-h-[520px] md:grid-cols-[320px_minmax(0,1fr)] lg:grid-cols-[360px_minmax(0,1fr)]">
             <aside
               className={clsx(
-                "flex min-h-0 flex-col border-b border-slate-200 bg-[linear-gradient(180deg,#f8fafc,#ffffff)] md:border-b-0 md:border-r",
+                "flex min-h-0 min-w-0 flex-col border-b border-slate-200 bg-[linear-gradient(180deg,#f8fafc,#ffffff)] md:border-b-0 md:border-r",
                 activeConversation && !isMobileListOpen ? "hidden md:flex" : "flex",
               )}
             >
@@ -593,7 +593,7 @@ function MessagesContent() {
 
             <section
               className={clsx(
-                "flex min-h-0 flex-col bg-[linear-gradient(180deg,#ffffff,#f8fafc)]",
+                "flex min-h-0 min-w-0 flex-col bg-[linear-gradient(180deg,#ffffff,#f8fafc)]",
                 !activeConversation || isMobileListOpen ? "hidden md:flex" : "flex",
               )}
             >
@@ -624,13 +624,13 @@ function MessagesContent() {
                             {counterparty?.online ? "En ligne" : "Hors ligne"}
                           </span>
                         </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                          <span>{activeConversation.listing?.title ?? "Conversation directe"}</span>
+                        <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2 text-sm text-slate-500">
+                          <span className="max-w-full truncate">{activeConversation.listing?.title ?? "Conversation directe"}</span>
                           {activeConversation.listing?.id ? (
                             <>
                               <span className="text-slate-300">/</span>
                               <Link href={`/listings/${activeConversation.listing.id}`} className="font-medium text-teal-700 hover:text-teal-800">
-                                Voir l'annonce
+                                Voir l&apos;annonce
                               </Link>
                             </>
                           ) : null}
@@ -748,7 +748,7 @@ function MessagesContent() {
                     </div>
 
                     <div className="mt-1.5 text-[11px] text-slate-500">
-                      <p>Entree pour envoyer, Maj + Entree pour une nouvelle ligne. Jusqu'a 8 fichiers et 20 Mo par piece jointe.</p>
+                      <p>Entree pour envoyer, Maj + Entree pour une nouvelle ligne. Jusqu&apos;a 8 fichiers et 20 Mo par piece jointe.</p>
                     </div>
                   </form>
                 </>
@@ -757,7 +757,7 @@ function MessagesContent() {
                   <div className="max-w-md rounded-[2rem] border border-slate-200 bg-slate-50 px-6 py-8 text-center shadow-sm">
                     <p className="text-sm uppercase tracking-[0.12em] text-slate-500">Messagerie</p>
                     <h2 className="mt-2 text-2xl font-semibold text-slate-900">Selectionnez un fil</h2>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">Choisissez une conversation a gauche pour afficher l'historique, voir les confirmations de lecture et repondre en direct.</p>
+                    <p className="mt-3 text-sm leading-6 text-slate-600">Choisissez une conversation a gauche pour afficher l&apos;historique, voir les confirmations de lecture et repondre en direct.</p>
                   </div>
                 </div>
               )}
@@ -808,7 +808,7 @@ function MessageBubble({ message, isOwn }: { message: Message; isOwn: boolean })
             : "border-slate-200 bg-white text-slate-900",
         )}
       >
-        {message.content ? <p className="text-sm leading-6 text-slate-800">{message.content}</p> : null}
+        {message.content ? <p className="text-sm leading-6 whitespace-pre-wrap break-words text-slate-800 [overflow-wrap:anywhere]">{message.content}</p> : null}
 
         {message.attachments.length > 0 ? (
           <div className={clsx("flex flex-col gap-2", message.content ? "mt-2" : null)}>

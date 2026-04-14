@@ -35,8 +35,8 @@ type AuthShowcaseProps = {
 export function AuthShowcase({ className = "", viewportBounded = false }: AuthShowcaseProps) {
   const [activePreview, setActivePreview] = useState(0);
   const imageWrapperClassName = viewportBounded
-    ? "relative aspect-[16/11] h-full min-h-[260px] sm:min-h-[320px] lg:aspect-auto lg:min-h-0 lg:h-full"
-    : "relative aspect-[16/11] h-full min-h-[420px] lg:aspect-auto lg:min-h-full";
+    ? "relative aspect-[16/11] h-full min-h-[170px] sm:min-h-[320px] lg:aspect-auto lg:min-h-0 lg:h-full"
+    : "relative aspect-[16/11] h-full min-h-[180px] sm:min-h-[360px] lg:aspect-auto lg:min-h-full";
 
   const movePreview = (direction: 1 | -1) => {
     setActivePreview((current) => (current + direction + previewSlides.length) % previewSlides.length);
@@ -52,9 +52,9 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
 
   return (
     <aside
-      className={`overflow-hidden rounded-[32px] border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_32%),radial-gradient(circle_at_bottom_left,#bfdbfe,transparent_30%),linear-gradient(135deg,#0f172a,#111827_48%,#0f172a)] p-3 shadow-sm lg:flex lg:h-full lg:flex-col ${className}`}
+      className={`overflow-hidden rounded-[28px] border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_32%),radial-gradient(circle_at_bottom_left,#bfdbfe,transparent_30%),linear-gradient(135deg,#0f172a,#111827_48%,#0f172a)] p-2.5 shadow-sm sm:rounded-[32px] sm:p-3 lg:flex lg:h-full lg:flex-col ${className}`}
     >
-      <div className="relative overflow-hidden rounded-[24px] bg-slate-950 lg:min-h-0 lg:flex-1">
+      <div className="relative overflow-hidden rounded-[20px] bg-slate-950 sm:rounded-[24px] lg:min-h-0 lg:flex-1">
         <div className={imageWrapperClassName}>
           {previewSlides.map((slide, index) => (
             <div
@@ -80,38 +80,78 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
             </div>
           ))}
 
-          <div className="absolute left-5 top-5 rounded-full border border-white/15 bg-slate-950/45 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-teal-200 backdrop-blur-sm">
+          <div className="absolute left-3 top-3 rounded-full border border-white/15 bg-slate-950/45 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-200 backdrop-blur-sm sm:left-5 sm:top-5 sm:px-3 sm:text-xs">
             Experience OXLIS
           </div>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-4 px-1 text-white">
-        <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-300">Defilement automatique</p>
-          <p className="mt-1 text-sm text-slate-200">Un apercu visuel du marketplace, du dashboard et des negociations.</p>
+      <div className="mt-3 px-1 text-white sm:mt-4">
+        <div className="sm:hidden">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-slate-300">Apercu {activePreview + 1} / {previewSlides.length}</p>
+          <p className="mt-2 text-sm leading-5 text-slate-100">{previewSlides[activePreview]?.title}</p>
+
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              {previewSlides.map((slide, index) => (
+                <button
+                  key={slide.src}
+                  type="button"
+                  onClick={() => setActivePreview(index)}
+                  aria-label={`Afficher l'apercu ${index + 1}`}
+                  className={`h-2.5 rounded-full transition ${index === activePreview ? "w-6 bg-teal-300" : "w-2.5 bg-white/30"}`}
+                />
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => movePreview(-1)}
+                aria-label="Apercu precedent"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => movePreview(1)}
+                aria-label="Apercu suivant"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => movePreview(-1)}
-            aria-label="Apercu precedent"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => movePreview(1)}
-            aria-label="Apercu suivant"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+
+        <div className="hidden sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-300">Defilement automatique</p>
+            <p className="mt-1 text-sm text-slate-200">Un apercu visuel du marketplace, du dashboard et des negociations.</p>
+          </div>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <button
+              type="button"
+              onClick={() => movePreview(-1)}
+              aria-label="Apercu precedent"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => movePreview(1)}
+              aria-label="Apercu suivant"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="mt-4 flex items-stretch gap-3 overflow-x-auto pb-1">
+      <div className="mt-4 hidden dashboard-scrollbar items-stretch gap-3 overflow-x-auto pb-1 sm:flex">
         {previewSlides.map((slide, index) => (
           <button
             key={slide.src}

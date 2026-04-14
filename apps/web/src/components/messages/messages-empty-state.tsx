@@ -42,12 +42,12 @@ export function MessagesEmptyState() {
 
   return (
     <section className="mt-4 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm sm:mt-5">
-      <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:p-8">
+      <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:p-8">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">Messagerie en attente</p>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Aucun fil actif pour le moment.</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-            Ici, un fil correspond a une conversation privee entre un acheteur et un vendeur. Tant que personne n'a clique sur
+            Ici, un fil correspond a une conversation privee entre un acheteur et un vendeur. Tant que personne n&apos;a clique sur
             Contacter le vendeur depuis une annonce, cette page reste vide. Au lieu de laisser un trou, on vous montre le fonctionnement.
           </p>
 

@@ -103,13 +103,13 @@ function AuthContent() {
 
   return (
     <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-8">
-      <div className="grid gap-6 lg:min-h-[calc(100svh-128px)] lg:grid-cols-[minmax(0,1fr)_minmax(360px,35%)] xl:gap-8">
+      <div className="grid gap-6 lg:min-h-[calc(100svh-128px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,35%)] xl:gap-8">
         <AuthShowcase className="order-2 lg:order-1" />
 
         <section className="order-1 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-7 lg:order-2 lg:flex lg:h-full lg:flex-col lg:justify-center">
           <div className="mb-6">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">Acces securise</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Entrez dans votre espace OXLIS</h1>
+            <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">Entrez dans votre espace OXLIS</h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Connectez-vous pour publier une annonce, suivre vos conversations ou avancer sur un deal en cours.
             </p>
@@ -120,7 +120,7 @@ function AuthContent() {
               type="button"
               onClick={() => setIsLogin(true)}
               data-testid="auth-tab-login"
-              className={`w-1/2 rounded-lg px-3 py-2 text-sm font-medium ${isLogin ? "bg-white text-slate-900 shadow" : "text-slate-600"}`}
+              className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium sm:text-sm ${isLogin ? "bg-white text-slate-900 shadow" : "text-slate-600"}`}
             >
               Connexion
             </button>
@@ -128,7 +128,7 @@ function AuthContent() {
               type="button"
               onClick={() => setIsLogin(false)}
               data-testid="auth-tab-register"
-              className={`w-1/2 rounded-lg px-3 py-2 text-sm font-medium ${!isLogin ? "bg-white text-slate-900 shadow" : "text-slate-600"}`}
+              className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium sm:text-sm ${!isLogin ? "bg-white text-slate-900 shadow" : "text-slate-600"}`}
             >
               Creer un compte
             </button>

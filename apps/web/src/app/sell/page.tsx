@@ -55,11 +55,11 @@ function SellContent() {
   };
 
   return (
-    <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
-        <div className="mb-6 border-b border-slate-200 pb-6">
+    <div className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:p-8">
+        <div className="mb-5 border-b border-slate-200 pb-5 sm:mb-6 sm:pb-6">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">Composer vendeur</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Creer une annonce complete et exploitable</h1>
+          <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">Creer une annonce complete et exploitable</h1>
           <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-600">
             Cette page reprend la logique d'une vraie fiche OXLIS: identite de l'actif, KPI, memo detaille et visuels.
             Vous pouvez maintenant construire une annonce bien plus complete, y compris sa galerie d'images.

@@ -66,49 +66,106 @@ const nicheLinks = [
   { label: "Workflow SaaS", href: "/listings/promptloop-ai" },
 ] as const;
 
+const mobileFooterColumns = footerColumns.slice(0, 4).map((column) => ({
+  ...column,
+  links: column.links.slice(0, 3),
+}));
+
+const mobileNicheLinks = nicheLinks.slice(0, 6);
+
 export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-16 border-t border-slate-200 bg-[linear-gradient(180deg,rgba(236,254,255,0.45),#ffffff_38%,#ffffff)]">
-      <div className="w-full px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-y-12 md:grid-cols-3 xl:grid-cols-5 xl:gap-x-10">
-          {footerColumns.map((column) => (
-            <div key={column.title}>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-900">{column.title}</h3>
+    <footer className="mt-10 border-t border-slate-200 bg-[linear-gradient(180deg,rgba(236,254,255,0.45),#ffffff_38%,#ffffff)] md:mt-16">
+      <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
+        <div className="md:hidden">
+          <div className="rounded-[28px] border border-slate-200 bg-white/90 p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-900">OXLIS</p>
+            <p className="mt-2 max-w-sm text-sm leading-6 text-slate-600">
+              Achetez, vendez et suivez vos deals sans finir sur un footer interminable sur mobile.
+            </p>
 
-              <div className="mt-5 space-y-4">
-                {column.links.map((link) => (
-                  <div key={`${column.title}-${link.label}-${link.href}`}>
-                    <Link href={link.href} className="text-sm leading-6 text-slate-600 transition hover:text-slate-900">
-                      {link.label}
-                    </Link>
+            <div className="mt-5 grid grid-cols-2 gap-4">
+              {mobileFooterColumns.map((column) => (
+                <div key={column.title}>
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-900">{column.title}</h3>
+
+                  <div className="mt-3 space-y-2.5">
+                    {column.links.map((link) => (
+                      <div key={`${column.title}-${link.label}-${link.href}`}>
+                        <Link href={link.href} className="text-xs leading-5 text-slate-600 transition hover:text-slate-900">
+                          {link.label}
+                        </Link>
+                      </div>
+                    ))}
                   </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 border-t border-slate-200 pt-4">
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-900">Niches actives</h3>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {mobileNicheLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-teal-300 hover:text-slate-900"
+                  >
+                    {item.label}
+                  </Link>
                 ))}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        <div className="mt-10 border-t border-slate-200 pt-8">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-900">Dossiers et categories a suivre</h3>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            {nicheLinks.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-300 hover:text-slate-900"
-              >
-                {item.label}
-              </Link>
-            ))}
+          <div className="mt-5 border-t border-slate-200 pt-4 text-[11px] text-slate-500">
+            <p>© {year} OXLIS. Marketplace pour la transmission de business numeriques.</p>
+            <p className="mt-2">Annonces, conversations, offres et sequestre simule dans un meme environnement.</p>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-2 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {year} OXLIS. Marketplace pour la transmission de business numeriques.</p>
-          <p>Annonces, conversations, offres et sequestre simule dans un meme environnement.</p>
+        <div className="hidden md:block">
+          <div className="grid grid-cols-3 gap-y-8 xl:grid-cols-5 xl:gap-x-10">
+            {footerColumns.map((column) => (
+              <div key={column.title}>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-900">{column.title}</h3>
+
+                <div className="mt-5 space-y-4">
+                  {column.links.map((link) => (
+                    <div key={`${column.title}-${link.label}-${link.href}`}>
+                      <Link href={link.href} className="text-sm leading-6 text-slate-600 transition hover:text-slate-900">
+                        {link.label}
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 border-t border-slate-200 pt-8">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-900">Dossiers et categories a suivre</h3>
+
+            <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-5">
+              {nicheLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-300 hover:text-slate-900"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-10 flex flex-col gap-2 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <p>© {year} OXLIS. Marketplace pour la transmission de business numeriques.</p>
+            <p>Annonces, conversations, offres et sequestre simule dans un meme environnement.</p>
+          </div>
         </div>
       </div>
     </footer>

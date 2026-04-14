@@ -108,8 +108,8 @@ function DashboardContent() {
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Pilotage vendeur et deal flow</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">Tableau de bord des annonces, offres et transactions.</h1>
-            <p className="mt-4 text-base text-slate-700 sm:text-lg">
+            <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">Tableau de bord des annonces, offres et transactions.</h1>
+            <p className="mt-4 text-sm leading-6 text-slate-700 sm:text-base lg:text-lg">
               Suivez vos actifs en temps reel, pilotez les discussions acheteurs et faites progresser chaque deal jusqu'au sequestre.
             </p>
           </div>

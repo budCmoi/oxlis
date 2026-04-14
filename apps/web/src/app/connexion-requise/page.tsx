@@ -9,7 +9,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 
 export default function ConnexionRequisePage() {
   return (
-    <Suspense fallback={<p className="mx-auto max-w-md px-4 py-10 text-sm text-slate-500">Chargement de l'acces securise...</p>}>
+    <Suspense fallback={<p className="mx-auto max-w-md px-4 py-10 text-sm text-slate-500">Chargement de l&apos;acces securise...</p>}>
       <ConnexionRequiseContent />
     </Suspense>
   );
@@ -30,13 +30,13 @@ function ConnexionRequiseContent() {
 
   return (
     <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-8">
-      <div className="grid gap-6 lg:h-[calc(100svh-128px)] lg:max-h-[calc(100svh-128px)] lg:grid-cols-[minmax(0,1fr)_minmax(360px,35%)] lg:overflow-hidden xl:gap-8">
+      <div className="grid gap-6 lg:h-[calc(100svh-128px)] lg:max-h-[calc(100svh-128px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,35%)] lg:overflow-hidden xl:gap-8">
         <AuthShowcase className="order-2 lg:order-1 lg:max-h-full" viewportBounded />
 
         <section className="order-1 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-7 lg:order-2 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:justify-start lg:overflow-y-auto">
           <div className="mb-4">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">Acces protege</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Authentification requise</h1>
+            <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">Authentification requise</h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Connectez-vous pour acceder a vos annonces, offres et conversations, puis reprendre exactement la ou vous en etiez.
             </p>
@@ -89,7 +89,7 @@ function ConnexionRequiseContent() {
               href="/"
               className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
             >
-              Retour a l'accueil
+              Retour a l&apos;accueil
             </Link>
           </div>
 

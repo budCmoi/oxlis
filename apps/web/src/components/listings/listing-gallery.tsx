@@ -73,7 +73,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
             type="button"
             onClick={() => moveSlide(-1)}
             aria-label="Image precedente"
-            className="absolute left-4 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75"
+            className="absolute left-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:left-4 sm:h-11 sm:w-11"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -82,12 +82,12 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
             type="button"
             onClick={() => moveSlide(1)}
             aria-label="Image suivante"
-            className="absolute right-4 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75"
+            className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:right-4 sm:h-11 sm:w-11"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
 
-          <div className="absolute bottom-4 right-4 rounded-full border border-white/15 bg-slate-950/45 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+          <div className="absolute bottom-3 right-3 rounded-full border border-white/15 bg-slate-950/45 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm sm:bottom-4 sm:right-4 sm:text-xs">
             {activeIndex + 1} / {slides.length}
           </div>
         </div>
@@ -165,7 +165,7 @@ function ListingGalleryPanel({
 
       {isPreview ? (
         <>
-          <div className="absolute left-4 top-4 flex flex-wrap items-center gap-2">
+          <div className="absolute left-3 top-3 flex flex-wrap items-center gap-2 sm:left-4 sm:top-4">
             <span className="rounded-full border border-white/15 bg-white/12 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
               {slide.label}
             </span>
@@ -174,14 +174,14 @@ function ListingGalleryPanel({
             </span>
           </div>
 
-          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+          <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5">
             <div className="max-w-2xl">
               <p className="text-xs uppercase tracking-[0.16em] text-slate-300">{listing.niche}</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-white">{listing.title}</p>
-              <p className="mt-2 max-w-xl text-sm text-slate-200/90">{slide.caption}</p>
+              <p className="mt-2 text-xl font-semibold leading-tight tracking-tight text-white sm:text-3xl">{listing.title}</p>
+              <p className="mt-2 max-w-xl text-xs leading-5 text-slate-200/90 sm:text-sm">{slide.caption}</p>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2 text-xs text-white sm:text-sm">
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-white sm:mt-4 sm:text-sm">
               <MetricPill label="Prix" value={formatCurrency(listing.askingPrice)} />
               <MetricPill label="CA/mo" value={formatCurrency(listing.monthlyRevenue)} />
               <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />

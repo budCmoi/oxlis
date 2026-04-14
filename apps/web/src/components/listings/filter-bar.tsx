@@ -18,7 +18,7 @@ type Props = {
 export function FilterBar({ filters, setFilters, onApply }: Props) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="grid gap-3 md:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <input
           value={filters.priceMin}
           onChange={(e) => setFilters((prev) => ({ ...prev, priceMin: e.target.value }))}
@@ -47,7 +47,7 @@ export function FilterBar({ filters, setFilters, onApply }: Props) {
         />
         <button
           onClick={onApply}
-          className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+          className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 sm:col-span-2 lg:col-span-1"
         >
           Appliquer
         </button>

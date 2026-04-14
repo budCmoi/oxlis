@@ -16,7 +16,14 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html,
 body {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  overflow-x: hidden;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
@@ -25,20 +32,55 @@ body {
 .site-shell {
   display: flex;
   min-height: 100vh;
+  width: 100%;
   flex-direction: column;
+  overflow-x: clip;
 }
 
-.mobile-app-gate {
-  display: none;
+.mobile-nav-toggle {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-sidebar-layer {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100dvh;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  z-index: 9999;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.mobile-sidebar-backdrop {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.mobile-sidebar-panel {
+  transform: translateX(-100%);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#mobile-nav-toggle:checked ~ .mobile-sidebar-layer {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#mobile-nav-toggle:checked ~ .mobile-sidebar-layer .mobile-sidebar-panel {
+  transform: translateX(0);
+}
+
+#mobile-nav-toggle:checked ~ .site-shell,
+#mobile-nav-toggle:checked ~ header,
+#mobile-nav-toggle:checked ~ .mobile-sidebar-layer {
+  touch-action: none;
+}
+
+body:has(#mobile-nav-toggle:checked) {
+  overflow: hidden;
 }
 
 * {
@@ -79,62 +121,6 @@ body {
   will-change: transform;
 }
 
-.mobile-gate-orb {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(14px);
-  opacity: 0.75;
-  animation: mobile-gate-float 12s ease-in-out infinite;
-}
-
-.mobile-gate-orb-one {
-  top: 7%;
-  left: -18%;
-  height: 18rem;
-  width: 18rem;
-  background: radial-gradient(circle, rgba(45, 212, 191, 0.5), rgba(45, 212, 191, 0));
-}
-
-.mobile-gate-orb-two {
-  right: -20%;
-  bottom: 10%;
-  height: 20rem;
-  width: 20rem;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.38), rgba(59, 130, 246, 0));
-  animation-delay: -5s;
-}
-
-.mobile-gate-grid {
-  background-image:
-    linear-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.16) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 85%);
-}
-
-.mobile-gate-card-stack > article:nth-child(2) {
-  animation-delay: -2s;
-}
-
-.mobile-gate-card-stack > article:nth-child(3) {
-  animation-delay: -4s;
-}
-
-.mobile-gate-card-stack > article {
-  animation: mobile-gate-float 10s ease-in-out infinite;
-}
-
-@keyframes mobile-gate-float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
 @keyframes listing-gallery-fade {
   0% {
     opacity: 0;
@@ -154,37 +140,5 @@ body {
 
   100% {
     transform: scale(1);
-  }
-}
-
-@media (max-width: 999px) {
-  html,
-  body {
-    width: 100%;
-    height: 100%;
-    min-height: 100dvh;
-    overflow: hidden;
-  }
-
-  body {
-    position: relative;
-  }
-
-  .site-shell {
-    display: none !important;
-    visibility: hidden;
-    height: 0;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  .mobile-app-gate {
-    display: block !important;
-  }
-}
-
-@media (min-width: 1000px) {
-  .mobile-app-gate {
-    display: none !important;
   }
 }

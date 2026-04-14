@@ -76,10 +76,10 @@ export default function HomePage() {
       <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-11">
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Plateforme d'acquisition digitale</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+          <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
             Achetez et vendez des entreprises numeriques rentables en toute confiance.
           </h1>
-          <p className="mt-4 text-base text-slate-700 sm:text-lg">
+          <p className="mt-4 text-sm leading-6 text-slate-700 sm:text-base lg:text-lg">
             Decouvrez des SaaS, e-commerces et medias selectionnes. Negociez via la messagerie integree,
             envoyez des offres et finalisez via une simulation de sequestre.
           </p>
