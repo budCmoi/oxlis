@@ -45,9 +45,7 @@ cp apps/web/.env.local.example apps/web/.env.local
 
 Set a dedicated `ATTACHMENTS_ENCRYPTION_KEY` in `apps/api/.env` for production-grade chat attachment encryption at rest.
 
-If you want Google or Apple sign-in without a third-party auth broker, set `GOOGLE_CLIENT_ID` and `APPLE_CLIENT_ID` in `apps/api/.env`, then set `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_APPLE_CLIENT_ID`, and `NEXT_PUBLIC_APPLE_REDIRECT_URI` in `apps/web/.env.local`.
-
-Legacy Firebase-based social sign-in remains supported during migration through `FIREBASE_PROJECT_ID` on the API and the `NEXT_PUBLIC_FIREBASE_*` variables on the frontend.
+If you want Google or Apple sign-in, set `GOOGLE_CLIENT_ID` and `APPLE_CLIENT_ID` in `apps/api/.env`, then set `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_APPLE_CLIENT_ID`, and `NEXT_PUBLIC_APPLE_REDIRECT_URI` in `apps/web/.env.local`.
 
 3. Start PostgreSQL
 
@@ -98,71 +96,59 @@ API runs on `http://localhost:4000/api`.
 
 PostgreSQL is now required for auth, dashboard, listings, offers, messaging, and escrow flows.
 
-## Netlify Deployment
+## Recommended Free Deployment
 
-The frontend in `apps/web` is ready for deployment on Netlify.
+The cleanest zero-cost path for this codebase is Render Free for both runtime services and a Render Free Postgres database.
 
-This repository now includes a root `netlify.toml` that configures Netlify to:
+This repository now includes a root `render.yaml` blueprint that creates:
 
-- build from `apps/web`
-- run `npm run build`
-- use Node.js 20
+- `oxlis-db` as the PostgreSQL database
+- `oxlis-web` from `apps/web`
+- `oxlis-api` from `apps/api`
 
-To deploy:
+Why this path:
 
-1. Import the repository into Netlify.
-2. Keep the build settings from `netlify.toml`.
-3. Add the environment variable `NEXT_PUBLIC_API_URL` in Netlify and point it to your public API, for example `https://api.example.com/api`.
-4. Redeploy the site.
+- GitHub Pages is not a fit because the app depends on a live API and dynamic Next.js routes
+- Vercel Functions are not a fit for the API as-is because Vercel limits request and response bodies to 4.5 MB, while OXLIS currently allows 5 MB listing images and 20 MB chat attachments
+- Render Free runs the existing Next.js server and Express API without rewriting uploads, SSE messaging, or Prisma access
 
-Important: this Netlify setup deploys the Next.js frontend only. The Express API in `apps/api` must be hosted separately on a public URL, then exposed to the frontend through `NEXT_PUBLIC_API_URL`.
+### Render Setup
 
-Optional for smoother zero-downtime rollouts on Netlify with Next.js: set `NETLIFY_NEXT_SKEW_PROTECTION=true` in the Netlify environment variables.
+1. Push the repository to GitHub.
+2. In Render, create a new Blueprint service from the repository root.
+3. Render will read `render.yaml` and provision `oxlis-db`, `oxlis-web`, and `oxlis-api` on the free plan.
+4. During creation, provide these API environment variables:
 
-## API + Database Deployment
+- `CLIENT_URL`
+- `GOOGLE_CLIENT_ID`
+- `APPLE_CLIENT_ID`
 
-The backend in `apps/api` is deployable as a separate Netlify site when `apps/api` is used as that site's deploy base, using the included `apps/api/netlify.toml`.
+5. Provide these frontend environment variables:
 
-Required production environment variables for the API site:
-
-- `DATABASE_URL`: public PostgreSQL connection string
-- `JWT_SECRET`: secret used to sign auth tokens
-- `ATTACHMENTS_ENCRYPTION_KEY`: dedicated key for encrypted chat attachments
-- `CLIENT_URL`: allowed frontend origin, for example `https://oxlis.netlify.app`
-- `GOOGLE_CLIENT_ID`: Google OAuth client id used to validate Google access tokens
-- `APPLE_CLIENT_ID`: Apple Services ID used to validate Apple identity tokens
-
-Required production environment variables for social sign-in on the frontend site:
-
+- `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
 - `NEXT_PUBLIC_APPLE_CLIENT_ID`
 - `NEXT_PUBLIC_APPLE_REDIRECT_URI`
 
-Legacy migration fallback if you still route social sign-in through Firebase:
+6. After the first deploy, update the cross-service URLs if needed:
 
-- `FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_API_KEY`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_APP_ID`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-- `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
+- set `CLIENT_URL` on `oxlis-api` to the public frontend origin, for example `https://oxlis-web.onrender.com`
+- set `NEXT_PUBLIC_API_URL` on `oxlis-web` to the public API base URL, for example `https://oxlis-api.onrender.com/api`
+- set `NEXT_PUBLIC_APPLE_REDIRECT_URI` to the frontend auth page, for example `https://oxlis-web.onrender.com/auth`
 
-Recommended production flow:
+7. Redeploy both services after those URL values are in place.
 
-1. Create or connect a PostgreSQL database from your provider of choice.
-2. Create a second Netlify site for `apps/api`.
-3. Set the four environment variables above on that API site.
-4. Deploy the API site and verify `GET /api/health` returns `{ "status": "ok" }`.
-5. Run production migrations against the same `DATABASE_URL`:
+Notes:
 
-```bash
-cd apps/api
-npm run prisma:migrate:deploy
-```
+- `JWT_SECRET` and `ATTACHMENTS_ENCRYPTION_KEY` are generated automatically by the Render blueprint for the API service
+- `DATABASE_URL` is injected automatically from the `oxlis-db` Render Postgres instance
+- on Render Free, `preDeployCommand` is not available, so the API service runs `npm run prisma:migrate:deploy && npm start` as its start command
+- Google and Apple sign-in are verified directly by the API and linked to users through Prisma `SocialAccount` rows
+- Google and Apple client IDs must still be created in Google Cloud Console and Apple Developer
+- Render Free services spin down after inactivity, so the first request after idle can take around a minute
+- Render Free Postgres expires after 30 days, and each workspace can only have one active free Render Postgres database
 
-6. Seed the production database with the non-destructive demo seed if needed:
+If you need demo data on the deployed database after migrations:
 
 ```bash
 cd apps/api
@@ -170,10 +156,6 @@ npm run prisma:seed
 ```
 
 `npm run prisma:seed` is safe to rerun because it uses stable ids and upserts demo records. Use `npm run prisma:seed:reset` only on disposable environments because it wipes marketplace data before reseeding.
-
-Once the API is public, set `NEXT_PUBLIC_API_URL` on the frontend site to that API URL, for example `https://oxlis-api.netlify.app/api`, then redeploy the frontend site.
-
-Google and Apple sign-in can run directly against the provider OAuth flows, while Prisma persists the linked provider identities and the application user record. Firebase remains available only as a migration fallback if you still have that setup in place.
 
 ## Demo Accounts
 

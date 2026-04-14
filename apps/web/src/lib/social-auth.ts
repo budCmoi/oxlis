@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  isGoogleAuthConfigured as isFirebaseSocialConfigured,
-  signInWithApplePopup as signInWithApplePopupViaFirebase,
-  signInWithGooglePopup as signInWithGooglePopupViaFirebase,
-} from "@/lib/firebase-auth";
-
 type SocialAuthPayload = {
   accessToken?: string;
   idToken?: string;
@@ -244,35 +238,17 @@ async function signInWithApplePopupDirect(): Promise<SocialAuthPayload> {
 }
 
 export function isGoogleAuthConfigured() {
-  return Boolean(getGoogleClientId()) || isFirebaseSocialConfigured();
+  return Boolean(getGoogleClientId());
 }
 
 export function isAppleAuthConfigured() {
-  return Boolean(getAppleClientId()) || isFirebaseSocialConfigured();
+  return Boolean(getAppleClientId());
 }
 
 export async function signInWithGooglePopup(): Promise<SocialAuthPayload> {
-  if (getGoogleClientId()) {
-    return signInWithGooglePopupDirect();
-  }
-
-  const payload = await signInWithGooglePopupViaFirebase();
-  return {
-    idToken: payload.idToken,
-    email: payload.email,
-    name: payload.name,
-  };
+  return signInWithGooglePopupDirect();
 }
 
 export async function signInWithApplePopup(): Promise<SocialAuthPayload> {
-  if (getAppleClientId()) {
-    return signInWithApplePopupDirect();
-  }
-
-  const payload = await signInWithApplePopupViaFirebase();
-  return {
-    idToken: payload.idToken,
-    email: payload.email,
-    name: payload.name,
-  };
+  return signInWithApplePopupDirect();
 }

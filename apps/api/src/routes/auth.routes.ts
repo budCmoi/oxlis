@@ -4,8 +4,7 @@ import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../config/env";
-import { verifyFirebaseSocialToken } from "../lib/firebase-auth";
-import { detectIdentityTokenIssuer, verifyAppleIdentityToken, verifyGoogleAccessToken } from "../lib/social-auth";
+import { verifyAppleIdentityToken, verifyGoogleAccessToken } from "../lib/social-auth";
 import { prisma } from "../lib/prisma";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 
@@ -23,17 +22,11 @@ const loginSchema = z.object({
   password: z.string().min(6),
 });
 
-const googleLoginSchema = z
-  .object({
-    accessToken: z.string().min(1).optional(),
-    idToken: z.string().min(1).optional(),
-    role: z.enum(["BUYER", "SELLER", "BOTH"]).optional(),
-    name: z.string().trim().min(2).max(120).optional(),
-  })
-  .refine((payload) => Boolean(payload.accessToken || payload.idToken), {
-    message: "Un jeton Google est requis",
-    path: ["accessToken"],
-  });
+const googleLoginSchema = z.object({
+  accessToken: z.string().min(1),
+  role: z.enum(["BUYER", "SELLER", "BOTH"]).optional(),
+  name: z.string().trim().min(2).max(120).optional(),
+});
 
 const appleLoginSchema = z.object({
   idToken: z.string().min(1),
@@ -300,14 +293,7 @@ router.post("/google", async (req, res) => {
   }
 
   try {
-    const identity = parsed.data.accessToken
-      ? await verifyGoogleAccessToken(parsed.data.accessToken)
-      : await verifyFirebaseSocialToken(parsed.data.idToken!, "google.com").then((verified) => ({
-          provider: "google" as const,
-          providerUserId: verified.uid,
-          email: verified.email,
-          name: verified.name,
-        }));
+    const identity = await verifyGoogleAccessToken(parsed.data.accessToken);
 
     return res.json(
       await completeSocialLogin({
@@ -333,15 +319,7 @@ router.post("/apple", async (req, res) => {
   }
 
   try {
-    const issuer = detectIdentityTokenIssuer(parsed.data.idToken);
-    const identity = issuer === "https://appleid.apple.com"
-      ? await verifyAppleIdentityToken(parsed.data.idToken)
-      : await verifyFirebaseSocialToken(parsed.data.idToken, "apple.com").then((verified) => ({
-          provider: "apple" as const,
-          providerUserId: verified.uid,
-          email: verified.email,
-          name: verified.name,
-        }));
+    const identity = await verifyAppleIdentityToken(parsed.data.idToken);
 
     return res.json(
       await completeSocialLogin({
