@@ -167,7 +167,7 @@ async function verifyFirebaseIdentityToken(
     issuer: getFirebaseIssuer(env.FIREBASE_PROJECT_ID),
     audience: env.FIREBASE_PROJECT_ID,
   }).catch(() => {
-    throw new Error("Jeton Google invalide");
+    throw new Error(`Jeton ${getFirebaseProviderLabel(expectedProvider)} invalide`);
   });
 
   const email = normalizeEmail(payload.email);
