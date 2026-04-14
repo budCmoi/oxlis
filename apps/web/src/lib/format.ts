@@ -11,6 +11,20 @@ export const formatCompact = (value: number) =>
     maximumFractionDigits: 1,
   }).format(value);
 
+export const truncateText = (value: string, maxLength: number) => {
+  const normalized = value.trim();
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  if (maxLength <= 3) {
+    return ".".repeat(Math.max(0, maxLength));
+  }
+
+  return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
+};
+
 const listingStatusLabels = {
   ACTIVE: "Active",
   SOLD: "Vendue",

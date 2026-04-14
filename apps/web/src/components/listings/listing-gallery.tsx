@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
-import { getListingGallery } from "@/lib/listing-visuals";
+import { getListingGallery, ListingVisual } from "@/lib/listing-visuals";
 import { Listing } from "@/types";
 
 type ListingGalleryProps = {
@@ -19,7 +19,6 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const activeSlide = slides[activeIndex];
-  const isRemoteSlide = /^https?:\/\//i.test(activeSlide.src);
 
   const goToSlide = (index: number) => {
     setActiveIndex((index + slides.length) % slides.length);
@@ -62,41 +61,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
             aria-label="Ouvrir l'image en grand"
             className="relative block aspect-[16/9] w-full overflow-hidden text-left"
           >
-            <div className="absolute inset-0">
-                <Image
-                  src={activeSlide.src}
-                  alt={`Apercu visuel de ${listing.title} - ${activeSlide.title}`}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 720px"
-                  className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                  priority
-                  unoptimized={isRemoteSlide}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/10" />
-
-                <div className="absolute left-4 top-4 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-white/15 bg-white/12 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
-                    {activeSlide.label}
-                  </span>
-                  <span className="rounded-full border border-teal-300/25 bg-teal-400/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-100 backdrop-blur-sm">
-                    {listing.type}
-                  </span>
-                </div>
-
-                <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                  <div className="max-w-2xl">
-                    <p className="text-xs uppercase tracking-[0.16em] text-slate-300">{listing.niche}</p>
-                    <p className="mt-2 text-3xl font-semibold tracking-tight text-white">{listing.title}</p>
-                    <p className="mt-2 max-w-xl text-sm text-slate-200/90">{activeSlide.caption}</p>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-white sm:text-sm">
-                    <MetricPill label="Prix" value={formatCurrency(listing.askingPrice)} />
-                    <MetricPill label="CA/mo" value={formatCurrency(listing.monthlyRevenue)} />
-                    <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />
-                  </div>
-                </div>
-            </div>
+            <ListingGalleryPanel key={`preview-${activeIndex}`} listing={listing} slide={activeSlide} mode="preview" />
 
             <div className="absolute right-4 top-4 z-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-slate-950/45 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
               <Expand className="h-3.5 w-3.5" />
@@ -142,27 +107,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
 
           <div className="w-full max-w-6xl overflow-hidden rounded-[28px] border border-white/10 bg-slate-950 shadow-2xl">
             <div className="relative aspect-[16/9] w-full">
-              <div className="absolute inset-0">
-                  <Image
-                    src={activeSlide.src}
-                    alt={`Version agrandie de ${listing.title} - ${activeSlide.title}`}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    unoptimized={isRemoteSlide}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-slate-950/5" />
-                  <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-                    <p className="text-xs uppercase tracking-[0.16em] text-slate-300">{activeSlide.label}</p>
-                    <p className="mt-2 text-3xl font-semibold tracking-tight">{activeSlide.title}</p>
-                    <p className="mt-2 max-w-3xl text-sm text-slate-200">{activeSlide.caption}</p>
-                    <div className="mt-4 flex flex-wrap gap-2 text-xs sm:text-sm">
-                      <MetricPill label="Prix" value={formatCurrency(listing.askingPrice)} />
-                      <MetricPill label="CA/mo" value={formatCurrency(listing.monthlyRevenue)} />
-                      <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />
-                    </div>
-                  </div>
-              </div>
+              <ListingGalleryPanel key={`lightbox-${activeIndex}`} listing={listing} slide={activeSlide} mode="lightbox" />
 
               <button
                 type="button"
@@ -186,6 +131,76 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
         </div>
       ) : null}
     </>
+  );
+}
+
+function ListingGalleryPanel({
+  listing,
+  slide,
+  mode,
+}: {
+  listing: ListingGalleryProps["listing"];
+  slide: ListingVisual;
+  mode: "preview" | "lightbox";
+}) {
+  const isRemoteSlide = /^https?:\/\//i.test(slide.src);
+  const isPreview = mode === "preview";
+
+  return (
+    <div className="listing-gallery-slide absolute inset-0">
+      <Image
+        src={slide.src}
+        alt={
+          isPreview
+            ? `Apercu visuel de ${listing.title} - ${slide.title}`
+            : `Version agrandie de ${listing.title} - ${slide.title}`
+        }
+        fill
+        sizes={isPreview ? "(max-width: 1024px) 100vw, 720px" : "100vw"}
+        className={`listing-gallery-image object-cover ${isPreview ? "transition duration-500 group-hover:scale-[1.03]" : ""}`.trim()}
+        priority={isPreview}
+        unoptimized={isRemoteSlide}
+      />
+      <div className={`absolute inset-0 ${isPreview ? "bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/10" : "bg-gradient-to-t from-slate-950 via-slate-950/35 to-slate-950/5"}`} />
+
+      {isPreview ? (
+        <>
+          <div className="absolute left-4 top-4 flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-white/15 bg-white/12 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
+              {slide.label}
+            </span>
+            <span className="rounded-full border border-teal-300/25 bg-teal-400/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-100 backdrop-blur-sm">
+              {listing.type}
+            </span>
+          </div>
+
+          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+            <div className="max-w-2xl">
+              <p className="text-xs uppercase tracking-[0.16em] text-slate-300">{listing.niche}</p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-white">{listing.title}</p>
+              <p className="mt-2 max-w-xl text-sm text-slate-200/90">{slide.caption}</p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2 text-xs text-white sm:text-sm">
+              <MetricPill label="Prix" value={formatCurrency(listing.askingPrice)} />
+              <MetricPill label="CA/mo" value={formatCurrency(listing.monthlyRevenue)} />
+              <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-300">{slide.label}</p>
+          <p className="mt-2 text-3xl font-semibold tracking-tight">{slide.title}</p>
+          <p className="mt-2 max-w-3xl text-sm text-slate-200">{slide.caption}</p>
+          <div className="mt-4 flex flex-wrap gap-2 text-xs sm:text-sm">
+            <MetricPill label="Prix" value={formatCurrency(listing.askingPrice)} />
+            <MetricPill label="CA/mo" value={formatCurrency(listing.monthlyRevenue)} />
+            <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

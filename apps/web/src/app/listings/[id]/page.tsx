@@ -216,7 +216,7 @@ export default function ListingDetailPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Memo de l'annonce</p>
-            <div className="mt-4 space-y-4">
+            <div className="mt-4 max-h-[26rem] space-y-4 overflow-y-auto pr-3 dashboard-scrollbar sm:max-h-[32rem]">
               {descriptionSections.map((section, index) => (
                 <div key={`${listing.id}-description-${index}`}>
                   {section.heading ? <h2 className="text-sm font-semibold text-slate-900">{section.heading}</h2> : null}

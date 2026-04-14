@@ -69,6 +69,16 @@ body {
   box-shadow: 0 20px 70px -35px rgba(15, 23, 42, 0.45);
 }
 
+.listing-gallery-slide {
+  animation: listing-gallery-fade 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+.listing-gallery-image {
+  animation: listing-gallery-image-reveal 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform;
+}
+
 .mobile-gate-orb {
   position: absolute;
   border-radius: 999px;
@@ -122,6 +132,28 @@ body {
 
   50% {
     transform: translateY(-8px);
+  }
+}
+
+@keyframes listing-gallery-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes listing-gallery-image-reveal {
+  0% {
+    transform: scale(1.045);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
 

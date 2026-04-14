@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Activity, DollarSign, Layers, TrendingUp } from "lucide-react";
 import { ListingVisual } from "@/components/listings/listing-visual";
-import { formatCompact, formatCurrency, formatListingStatus } from "@/lib/format";
+import { formatCompact, formatCurrency, formatListingStatus, truncateText } from "@/lib/format";
 import { Listing } from "@/types";
 
 type Props = {
@@ -9,6 +9,9 @@ type Props = {
 };
 
 export function ListingCard({ listing }: Props) {
+  const displayTitle = truncateText(listing.title, 23);
+  const displaySummary = truncateText(listing.summary, 50);
+
   return (
     <article
       data-testid={`listing-card-${listing.id}`}
@@ -21,8 +24,12 @@ export function ListingCard({ listing }: Props) {
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
             {listing.niche} · {listing.type}
           </p>
-          <h3 className="mt-1 line-clamp-2 min-h-[3.5rem] text-xl font-semibold text-slate-900">{listing.title}</h3>
-          <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-sm text-slate-600">{listing.summary}</p>
+          <h3 title={listing.title} className="mt-1 min-h-[1.75rem] truncate text-xl font-semibold text-slate-900">
+            {displayTitle}
+          </h3>
+          <p title={listing.summary} className="mt-2 min-h-[2.5rem] text-sm leading-6 text-slate-600">
+            {displaySummary}
+          </p>
         </div>
         <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{formatListingStatus(listing.status)}</span>
       </div>
