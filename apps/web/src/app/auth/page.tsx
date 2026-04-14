@@ -1,9 +1,10 @@
 "use client";
 
 import { FormEvent, Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { AuthShowcase } from "@/components/auth/auth-showcase";
+import { usePageTransitionRouter } from "@/components/common/page-transition-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 import { isGoogleAuthConfigured, signInWithGooglePopup } from "@/lib/social-auth";
 import { apiRequest } from "@/lib/api";
@@ -29,7 +30,7 @@ export default function AuthPage() {
 }
 
 function AuthContent() {
-  const router = useRouter();
+  const { replace } = usePageTransitionRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading, loginWithSession } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
@@ -48,9 +49,9 @@ function AuthContent() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace(nextPath);
+      void replace(nextPath);
     }
-  }, [isAuthenticated, isLoading, nextPath, router]);
+  }, [isAuthenticated, isLoading, nextPath, replace]);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -69,7 +70,7 @@ function AuthContent() {
 
       loginWithSession(response.token, response.user);
       setStatus("Authentification reussie. Redirection vers votre espace...");
-      router.replace(nextPath);
+      await replace(nextPath);
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Echec de l'authentification");
     }
@@ -93,7 +94,7 @@ function AuthContent() {
 
       loginWithSession(response.token, response.user);
       setStatus("Authentification reussie. Redirection vers votre espace...");
-      router.replace(nextPath);
+      await replace(nextPath);
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Connexion Google impossible");
     } finally {

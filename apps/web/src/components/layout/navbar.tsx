@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ArrowRight, Building2, LogOut, Menu, X } from "lucide-react";
+import { usePageTransitionRouter } from "@/components/common/page-transition-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 
 const coreLinks = [
@@ -14,8 +15,9 @@ const coreLinks = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
+  const { push } = usePageTransitionRouter();
   const { isAuthenticated, user, logout } = useAuth();
+  const year = new Date().getFullYear();
 
   const isLinkActive = (href: string) => {
     if (href === "/") {
@@ -35,7 +37,7 @@ export function Navbar() {
   const handleLogout = () => {
     closeSidebar();
     logout();
-    router.push("/");
+    void push("/");
   };
 
   return (
@@ -165,6 +167,11 @@ export function Navbar() {
             </nav>
 
             <div className="border-t border-slate-200 px-4 py-4">
+              <div className="mb-4 space-y-2 text-[11px] leading-5 text-slate-500">
+                <p>© {year} OXLIS. Marketplace pour la transmission de business numeriques.</p>
+                <p>Annonces, conversations, offres et sequestre simule dans un meme environnement.</p>
+              </div>
+
               {!isAuthenticated ? (
                 <Link
                   href="/auth"

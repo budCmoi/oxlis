@@ -4,6 +4,7 @@ import Link from "next/link";
 import { startTransition, useEffect, useRef, useState } from "react";
 import { FileText, Handshake, Inbox, LayoutDashboard } from "lucide-react";
 import { RequireAuth } from "@/components/auth/require-auth";
+import { AnimatedSection } from "@/components/common/animated-section";
 import { ListingsRail } from "@/components/dashboard/listings-rail";
 import { OfferCard } from "@/components/dashboard/offer-card";
 import { Panel } from "@/components/dashboard/panel";
@@ -104,13 +105,16 @@ function DashboardContent() {
 
   return (
     <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-10">
+      <AnimatedSection
+        as="section"
+        className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-10"
+      >
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Pilotage vendeur et deal flow</p>
             <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">Tableau de bord des annonces, offres et transactions.</h1>
             <p className="mt-4 text-sm leading-6 text-slate-700 sm:text-base lg:text-lg">
-              Suivez vos actifs en temps reel, pilotez les discussions acheteurs et faites progresser chaque deal jusqu'au sequestre.
+              Suivez vos actifs en temps reel, pilotez les discussions acheteurs et faites progresser chaque deal jusqu&apos;au sequestre.
             </p>
           </div>
 
@@ -131,18 +135,18 @@ function DashboardContent() {
             </Link>
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
       {error ? <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
 
-      <section className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 lg:grid-cols-4">
+      <AnimatedSection as="section" className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 lg:grid-cols-4" delay={0.08}>
         <StatCard label="Annonces actives" value={data.stats.activeListings} icon={<LayoutDashboard className="h-4 w-4" />} />
         <StatCard label="Offres recues" value={data.stats.offersReceived} icon={<Handshake className="h-4 w-4" />} />
         <StatCard label="Offres envoyees" value={data.stats.offersMade} icon={<FileText className="h-4 w-4" />} />
         <StatCard label="Conversations" value={data.stats.openConversations} icon={<Inbox className="h-4 w-4" />} />
-      </section>
+      </AnimatedSection>
 
-      <section className="mt-5">
+      <AnimatedSection as="section" className="mt-5" delay={0.14}>
         <Panel title="Mes annonces" subtitle="Faites glisser horizontalement vos annonces ou utilisez les fleches pour boucler dans le rail.">
           <ListingsRail
             listings={data.listings}
@@ -157,9 +161,9 @@ function DashboardContent() {
             }
           />
         </Panel>
-      </section>
+      </AnimatedSection>
 
-      <section className="mt-4 grid gap-4 md:grid-cols-2 md:items-start">
+      <AnimatedSection as="section" className="mt-4 grid gap-4 md:grid-cols-2 md:items-start" delay={0.2}>
         <Panel
           title="Offres recues"
           subtitle="Acceptez, refusez ou contrez les offres entrantes."
@@ -263,7 +267,7 @@ function DashboardContent() {
           ))}
           {data.offersMade.length === 0 ? <p className="text-sm text-slate-500">Aucune offre envoyee pour le moment.</p> : null}
         </Panel>
-      </section>
+      </AnimatedSection>
     </div>
   );
 }

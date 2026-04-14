@@ -1,8 +1,10 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { AnimatedSection } from "@/components/common/animated-section";
+import { usePageTransitionRouter } from "@/components/common/page-transition-shell";
 import { ListingGallery } from "@/components/listings/listing-gallery";
 import { useAuth } from "@/components/providers/auth-provider";
 import { apiRequest, isAbortError } from "@/lib/api";
@@ -20,7 +22,7 @@ type ListingWithDetails = Listing & {
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
+  const { push } = usePageTransitionRouter();
   const { isAuthenticated, user } = useAuth();
   const [listing, setListing] = useState<ListingWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +31,7 @@ export default function ListingDetailPage() {
   const [offerMessage, setOfferMessage] = useState("");
   const [status, setStatus] = useState<string | null>(null);
 
-  const loadListing = async (signal?: AbortSignal) => {
+  const loadListing = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoadError(null);
       const payload = await apiRequest<ListingWithDetails>(`/listings/${id}`, { signal });
@@ -57,7 +59,7 @@ export default function ListingDetailPage() {
         setIsLoading(false);
       }
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -66,11 +68,11 @@ export default function ListingDetailPage() {
     void loadListing(controller.signal);
 
     return () => controller.abort();
-  }, [id]);
+  }, [loadListing]);
 
   const submitOffer = async () => {
     if (!isAuthenticated) {
-      router.push(`/auth?next=${encodeURIComponent(`/listings/${id}`)}`);
+      await push(`/auth?next=${encodeURIComponent(`/listings/${id}`)}`);
       return;
     }
 
@@ -100,7 +102,7 @@ export default function ListingDetailPage() {
     }
 
     if (!isAuthenticated) {
-      router.push(`/auth?next=${encodeURIComponent(`/listings/${id}`)}`);
+      await push(`/auth?next=${encodeURIComponent(`/listings/${id}`)}`);
       return;
     }
 
@@ -113,7 +115,7 @@ export default function ListingDetailPage() {
           recipientId: listing.owner.id,
         },
       });
-      router.push(`/messages?conversation=${conversation.id}`);
+      await push(`/messages?conversation=${conversation.id}`);
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Impossible de creer la conversation");
     }
@@ -241,7 +243,10 @@ export default function ListingDetailPage() {
 
   return (
     <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-4 py-6 sm:px-6 sm:py-9 lg:px-8 lg:py-10">
+      <AnimatedSection
+        as="section"
+        className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-4 py-6 sm:px-6 sm:py-9 lg:px-8 lg:py-10"
+      >
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 sm:text-xs">
@@ -264,16 +269,20 @@ export default function ListingDetailPage() {
             ))}
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
-      <div className="mt-4 grid gap-4 sm:mt-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.82fr)] xl:items-start">
+      <AnimatedSection
+        as="div"
+        className="mt-4 grid gap-4 sm:mt-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.82fr)] xl:items-start"
+        delay={0.08}
+      >
         <section className="order-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 xl:order-1">
           <div className="mb-6">
             <ListingGallery listing={listing} />
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Memo de l'annonce</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Memo de l&apos;annonce</p>
             <div className="mt-4 space-y-4 sm:max-h-[32rem] sm:overflow-y-auto sm:pr-3 sm:dashboard-scrollbar">
               {descriptionSections.map((section, index) => (
                 <div key={`${listing.id}-description-${index}`}>
@@ -356,7 +365,7 @@ export default function ListingDetailPage() {
             </div>
           </section>
         </aside>
-      </div>
+      </AnimatedSection>
     </div>
   );
 }

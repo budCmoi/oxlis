@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { gsap } from "gsap";
 import { getListingGallery, ListingVisual } from "@/lib/listing-visuals";
 import { Listing } from "@/types";
 
@@ -20,13 +20,9 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const activeSlide = slides[activeIndex];
 
-  const goToSlide = (index: number) => {
-    setActiveIndex((index + slides.length) % slides.length);
-  };
-
-  const moveSlide = (direction: 1 | -1) => {
-    goToSlide(activeIndex + direction);
-  };
+  const moveSlide = useCallback((direction: 1 | -1) => {
+    setActiveIndex((current) => (current + direction + slides.length) % slides.length);
+  }, [slides.length]);
 
   useEffect(() => {
     if (!isLightboxOpen) {
@@ -49,7 +45,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [activeIndex, isLightboxOpen, slides.length]);
+  }, [isLightboxOpen, moveSlide, slides.length]);
 
   return (
     <>
@@ -62,54 +58,25 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
             className="relative block aspect-[4/3] w-full overflow-hidden text-left sm:aspect-[16/9]"
           >
             <ListingGalleryPanel key={`preview-${activeIndex}`} listing={listing} slide={activeSlide} mode="preview" />
-
-            <div className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-slate-950/45 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm sm:right-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-xs">
-              <Expand className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Voir en grand</span>
-            </div>
           </button>
 
           <button
             type="button"
             onClick={() => moveSlide(-1)}
             aria-label="Image precedente"
-            className="absolute left-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:left-4 sm:h-11 sm:w-11"
+            className="absolute left-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:left-4 sm:h-9 sm:w-9"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
 
           <button
             type="button"
             onClick={() => moveSlide(1)}
             aria-label="Image suivante"
-            className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:right-4 sm:h-11 sm:w-11"
+            className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:right-4 sm:h-9 sm:w-9"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4" />
           </button>
-
-          <div className="absolute bottom-3 right-3 rounded-full border border-white/15 bg-slate-950/45 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm sm:bottom-4 sm:right-4 sm:text-xs">
-            {activeIndex + 1} / {slides.length}
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:hidden">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700">
-              {activeSlide.label}
-            </span>
-            <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
-              {listing.type}
-            </span>
-          </div>
-
-          <p className="mt-3 text-lg font-semibold leading-tight text-slate-900 [overflow-wrap:anywhere]">{listing.title}</p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{activeSlide.caption}</p>
-
-          <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-white">
-            <MetricPill label="Prix" value={formatCurrency(listing.askingPrice)} />
-            <MetricPill label="CA/mo" value={formatCurrency(listing.monthlyRevenue)} />
-            <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />
-          </div>
         </div>
       </div>
 
@@ -132,18 +99,18 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
                 type="button"
                 onClick={() => moveSlide(-1)}
                 aria-label="Image precedente en grand"
-                className="absolute left-4 top-1/2 z-20 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-teal-300/40"
+                className="absolute left-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-teal-300/40"
               >
-                <ChevronLeft className="h-6 w-6" />
+                <ChevronLeft className="h-5 w-5" />
               </button>
 
               <button
                 type="button"
                 onClick={() => moveSlide(1)}
                 aria-label="Image suivante en grand"
-                className="absolute right-4 top-1/2 z-20 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-teal-300/40"
+                className="absolute right-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-teal-300/40"
               >
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -164,70 +131,89 @@ function ListingGalleryPanel({
 }) {
   const isRemoteSlide = /^https?:\/\//i.test(slide.src);
   const isPreview = mode === "preview";
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const mediaRef = useRef<HTMLDivElement | null>(null);
+  const copyRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    const media = mediaRef.current;
+    if (!panel || !media) {
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      gsap.set(panel, { autoAlpha: 1, y: 0 });
+      gsap.set(media, { scale: 1 });
+      if (copyRef.current) {
+        gsap.set(copyRef.current.children, { autoAlpha: 1, y: 0 });
+      }
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      timeline.fromTo(
+        panel,
+        { autoAlpha: 0, y: 12 },
+        { autoAlpha: 1, y: 0, duration: isPreview ? 0.5 : 0.58 },
+      );
+
+      timeline.fromTo(media, { scale: 1.045 }, { scale: 1, duration: isPreview ? 0.82 : 0.9, ease: "power2.out" }, 0);
+
+      if (copyRef.current && copyRef.current.children.length > 0) {
+        timeline.fromTo(
+          Array.from(copyRef.current.children),
+          { autoAlpha: 0, y: 10 },
+          { autoAlpha: 1, y: 0, duration: 0.46, stagger: 0.06 },
+          0.1,
+        );
+      }
+    }, panel);
+
+    return () => ctx.revert();
+  }, [isPreview, slide.src, slide.title]);
 
   return (
-    <div className="listing-gallery-slide absolute inset-0">
-      <Image
-        src={slide.src}
-        alt={
-          isPreview
-            ? `Apercu visuel de ${listing.title} - ${slide.title}`
-            : `Version agrandie de ${listing.title} - ${slide.title}`
-        }
-        fill
-        sizes={isPreview ? "(max-width: 1024px) 100vw, 720px" : "100vw"}
-        className={`listing-gallery-image object-cover ${isPreview ? "transition duration-500 group-hover:scale-[1.03]" : ""}`.trim()}
-        priority={isPreview}
-        unoptimized={isRemoteSlide}
-      />
+    <div ref={panelRef} className="listing-gallery-slide absolute inset-0">
+      <div ref={mediaRef} className="absolute inset-0">
+        <Image
+          src={slide.src}
+          alt={
+            isPreview
+              ? `Apercu visuel de ${listing.title} - ${slide.title}`
+              : `Version agrandie de ${listing.title} - ${slide.title}`
+          }
+          fill
+          sizes={isPreview ? "(max-width: 1024px) 100vw, 720px" : "100vw"}
+          className={`listing-gallery-image object-cover ${isPreview ? "transition duration-500 group-hover:scale-[1.03]" : ""}`.trim()}
+          priority={isPreview}
+          unoptimized={isRemoteSlide}
+        />
+      </div>
       <div className={`absolute inset-0 ${isPreview ? "bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/10" : "bg-gradient-to-t from-slate-950 via-slate-950/35 to-slate-950/5"}`} />
 
       {isPreview ? (
-        <>
-          <div className="absolute left-3 top-3 flex flex-wrap items-center gap-2 sm:left-4 sm:top-4">
-            <span className="rounded-full border border-white/15 bg-white/12 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
-              {slide.label}
-            </span>
-            <span className="rounded-full border border-teal-300/25 bg-teal-400/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-100 backdrop-blur-sm">
-              {listing.type}
-            </span>
-          </div>
-
-          <div className="absolute inset-x-0 bottom-0 hidden p-5 sm:block">
-            <div className="max-w-2xl">
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-300">{listing.niche}</p>
-              <p className="mt-2 text-xl font-semibold leading-tight tracking-tight text-white sm:text-3xl">{listing.title}</p>
-              <p className="mt-2 max-w-xl text-xs leading-5 text-slate-200/90 sm:text-sm">{slide.caption}</p>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-white sm:mt-4 sm:text-sm">
-              <MetricPill label="Prix" value={formatCurrency(listing.askingPrice)} />
-              <MetricPill label="CA/mo" value={formatCurrency(listing.monthlyRevenue)} />
-              <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />
-            </div>
-          </div>
-        </>
+        <div ref={copyRef} className="absolute inset-x-0 bottom-0 p-4 sm:p-5 min-[1000px]:p-6">
+          <p className="text-base font-semibold leading-tight tracking-tight text-white [overflow-wrap:anywhere] sm:text-lg min-[1000px]:text-3xl">
+            {listing.title}
+          </p>
+          <p className="mt-1 max-w-xl text-[10px] leading-4 text-slate-200/90 sm:text-[11px] min-[1000px]:mt-2 min-[1000px]:text-sm min-[1000px]:leading-5">
+            {slide.caption}
+          </p>
+        </div>
       ) : (
-        <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-300">{slide.label}</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">{slide.title}</p>
-          <p className="mt-2 max-w-3xl text-sm text-slate-200">{slide.caption}</p>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs sm:text-sm">
-            <MetricPill label="Prix" value={formatCurrency(listing.askingPrice)} />
-            <MetricPill label="CA/mo" value={formatCurrency(listing.monthlyRevenue)} />
-            <MetricPill label="Profit/mo" value={formatCurrency(listing.monthlyProfit)} />
-          </div>
+        <div ref={copyRef} className="absolute inset-x-0 bottom-0 p-4 text-white sm:p-6 min-[1000px]:p-8">
+          <p className="text-lg font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-xl min-[1000px]:text-3xl">
+            {listing.title}
+          </p>
+          <p className="mt-1 max-w-3xl text-[10px] leading-4 text-slate-200/90 sm:text-[11px] min-[1000px]:mt-2 min-[1000px]:text-sm min-[1000px]:leading-5">
+            {slide.caption}
+          </p>
         </div>
       )}
     </div>
-  );
-}
-
-function MetricPill({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="rounded-full border border-white/15 bg-slate-950/35 px-3 py-1.5 backdrop-blur-sm">
-      <span className="text-slate-300">{label}</span>
-      <span className="ml-2 font-semibold text-white">{value}</span>
-    </span>
   );
 }

@@ -1,20 +1,21 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { usePageTransitionRouter } from "@/components/common/page-transition-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
-  const router = useRouter();
+  const { replace } = usePageTransitionRouter();
   const redirectPath = `/connexion-requise?next=${encodeURIComponent(pathname)}`;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace(redirectPath);
+      void replace(redirectPath);
     }
-  }, [isAuthenticated, isLoading, redirectPath, router]);
+  }, [isAuthenticated, isLoading, redirectPath, replace]);
 
   if (isLoading) {
     return (

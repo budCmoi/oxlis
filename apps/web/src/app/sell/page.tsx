@@ -61,12 +61,12 @@ function SellContent() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">Composer vendeur</p>
           <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">Creer une annonce complete et exploitable</h1>
           <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-600">
-            Cette page reprend la logique d'une vraie fiche OXLIS: identite de l'actif, KPI, memo detaille et visuels.
-            Vous pouvez maintenant construire une annonce bien plus complete, y compris sa galerie d'images.
+            Cette page reprend la logique d&apos;une vraie fiche OXLIS: identite de l&apos;actif, KPI, memo detaille et visuels.
+            Vous pouvez maintenant construire une annonce bien plus complete, y compris sa galerie d&apos;images.
           </p>
         </div>
 
-        <ListingForm key={formVersion} submitLabel="Publier l'annonce" onSubmit={submit} status={status} />
+        <ListingForm key={formVersion} submitLabel="Publier l&apos;annonce" onSubmit={submit} status={status} />
       </section>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatedSection } from "@/components/common/animated-section";
 import { FilterBar, Filters } from "@/components/listings/filter-bar";
 import { ListingCard } from "@/components/listings/listing-card";
 import { apiRequest, isAbortError } from "@/lib/api";
@@ -29,7 +30,7 @@ export default function HomePage() {
     return params.toString();
   }, [filters]);
 
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
@@ -61,7 +62,7 @@ export default function HomePage() {
         setLoading(false);
       }
     }
-  };
+  }, [queryString]);
 
   useEffect(() => {
     void fetchListings();
@@ -69,11 +70,14 @@ export default function HomePage() {
     return () => {
       requestRef.current?.abort();
     };
-  }, []);
+  }, [fetchListings]);
 
   return (
     <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-11">
+      <AnimatedSection
+        as="section"
+        className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-11"
+      >
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Plateforme d&apos;acquisition digitale</p>
           <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
@@ -84,22 +88,22 @@ export default function HomePage() {
             envoyez des offres et finalisez via une simulation de sequestre.
           </p>
         </div>
-      </section>
+      </AnimatedSection>
 
-      <div className="mt-4 sm:mt-5">
+      <AnimatedSection as="div" className="mt-4 sm:mt-5" delay={0.08}>
         <FilterBar filters={filters} setFilters={setFilters} onApply={fetchListings} />
-      </div>
+      </AnimatedSection>
 
       {loading ? <p className="mt-4 sm:mt-5 text-sm text-slate-500">Chargement des annonces...</p> : null}
       {error ? <p className="mt-4 sm:mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
 
-      <section className="mt-4 grid gap-4 sm:mt-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <AnimatedSection as="section" className="mt-4 grid gap-4 sm:mt-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" delay={0.14}>
         {listings.map((listing) => (
           <div key={listing.id} className="h-full min-w-0">
             <ListingCard listing={listing} />
           </div>
         ))}
-      </section>
+      </AnimatedSection>
 
       {!loading && listings.length === 0 ? (
         <p className="mt-6 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-600">

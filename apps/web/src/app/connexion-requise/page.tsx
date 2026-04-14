@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { Suspense, useEffect } from "react";
 import { ArrowRight, LockKeyhole, MessageSquare, ShieldCheck } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { AuthShowcase } from "@/components/auth/auth-showcase";
+import { usePageTransitionRouter } from "@/components/common/page-transition-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 
 export default function ConnexionRequisePage() {
@@ -16,7 +17,7 @@ export default function ConnexionRequisePage() {
 }
 
 function ConnexionRequiseContent() {
-  const router = useRouter();
+  const { replace } = usePageTransitionRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
   const nextPath = searchParams.get("next") || "/dashboard";
@@ -24,9 +25,9 @@ function ConnexionRequiseContent() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace(nextPath);
+      void replace(nextPath);
     }
-  }, [isAuthenticated, isLoading, nextPath, router]);
+  }, [isAuthenticated, isLoading, nextPath, replace]);
 
   return (
     <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-8">

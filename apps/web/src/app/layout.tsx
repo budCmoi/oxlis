@@ -1,9 +1,21 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
+import { PageTransitionShell } from "@/components/common/page-transition-shell";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import "./globals.css";
+
+function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <Navbar />
+      <main className="relative flex-1 overflow-x-clip">{children}</main>
+      <Footer />
+    </>
+  );
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,9 +45,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col overflow-x-hidden bg-background text-foreground">
         <div className="site-shell min-h-full flex w-full flex-col">
           <AuthProvider>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <Suspense fallback={<AppShell>{children}</AppShell>}>
+              <PageTransitionShell>
+                <AppShell>{children}</AppShell>
+              </PageTransitionShell>
+            </Suspense>
           </AuthProvider>
         </div>
       </body>

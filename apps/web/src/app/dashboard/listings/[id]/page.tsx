@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { usePageTransitionRouter } from "@/components/common/page-transition-shell";
 import { RequireAuth } from "@/components/auth/require-auth";
 import { useAuth } from "@/components/providers/auth-provider";
 import { ListingForm, ListingFormValues } from "@/components/listings/listing-form";
@@ -20,7 +21,7 @@ export default function EditListingPage() {
 
 function EditListingContent() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
+  const { push, replace } = usePageTransitionRouter();
   const { user, isLoading } = useAuth();
   const [listing, setListing] = useState<Listing | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -33,9 +34,9 @@ function EditListingContent() {
 
   useEffect(() => {
     if (!isLoading && listing && user?.id !== listing.owner.id) {
-      router.replace("/dashboard");
+      void replace("/dashboard");
     }
-  }, [isLoading, listing, router, user?.id]);
+  }, [isLoading, listing, replace, user?.id]);
 
   const submit = async (form: ListingFormValues) => {
     setStatus(null);
@@ -64,14 +65,14 @@ function EditListingContent() {
         },
       });
       setStatus("Annonce mise a jour avec succes.");
-      router.push("/dashboard");
+      await push("/dashboard");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Impossible de mettre a jour l'annonce");
     }
   };
 
   if (!listing) {
-    return <p className="mx-auto max-w-3xl px-4 py-10 text-sm text-slate-500">Chargement de l'editeur d'annonce...</p>;
+    return <p className="mx-auto max-w-3xl px-4 py-10 text-sm text-slate-500">Chargement de l&apos;editeur d&apos;annonce...</p>;
   }
 
   const memoFields = parseListingDescription(listing.description);
@@ -81,7 +82,7 @@ function EditListingContent() {
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Modifier l'annonce</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Modifier l&apos;annonce</h1>
             <p className="mt-1 text-sm text-slate-600">Mettez a jour les metriques, le positionnement et la stack technique de cet actif.</p>
           </div>
           <Link href="/dashboard" className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">

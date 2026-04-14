@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ChangeEvent, FormEvent, Suspense, startTransition, useDeferredValue, useEffect, useEffectEvent, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { ChangeEvent, FormEvent, Suspense, startTransition, useCallback, useDeferredValue, useEffect, useEffectEvent, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import { ArrowLeft, Check, CheckCheck, LoaderCircle, Paperclip, Search, SendHorizonal, Trash2, X } from "lucide-react";
 import { RequireAuth } from "@/components/auth/require-auth";
+import { usePageTransitionRouter } from "@/components/common/page-transition-shell";
 import { MessageAttachmentCard } from "@/components/messages/message-attachment-card";
 import { MessagesEmptyState } from "@/components/messages/messages-empty-state";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -53,7 +54,7 @@ export default function MessagesPage() {
 }
 
 function MessagesContent() {
-  const router = useRouter();
+  const { replace } = usePageTransitionRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -177,7 +178,7 @@ function MessagesContent() {
     }
   });
 
-  const applyConversationDeletion = useEffectEvent((conversationId: string) => {
+  const applyConversationDeletion = useCallback((conversationId: string) => {
     const remainingConversations = conversations.filter((conversation) => conversation.id !== conversationId);
     const nextActiveId = activeId === conversationId ? remainingConversations[0]?.id ?? null : activeId;
 
@@ -194,9 +195,9 @@ function MessagesContent() {
     });
 
     if (activeId === conversationId) {
-      router.replace(nextActiveId ? `/messages?conversation=${nextActiveId}` : "/messages");
+      void replace(nextActiveId ? `/messages?conversation=${nextActiveId}` : "/messages");
     }
-  });
+  }, [activeId, conversations, replace]);
 
   const handleStreamEvent = useEffectEvent((event: string, payload: unknown) => {
     if (event === "stream:ready") {
