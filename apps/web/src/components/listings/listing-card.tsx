@@ -9,6 +9,7 @@ type Props = {
 };
 
 export function ListingCard({ listing }: Props) {
+  const displayMeta = truncateText(`${listing.niche} · ${listing.type}`, 32);
   const displayTitle = truncateText(listing.title, 23);
   const displaySummary = truncateText(listing.summary, 50);
 
@@ -21,13 +22,13 @@ export function ListingCard({ listing }: Props) {
 
       <div className="mt-5 mb-4 flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-            {listing.niche} · {listing.type}
+          <p title={`${listing.niche} · ${listing.type}`} className="truncate text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            {displayMeta}
           </p>
           <h3 title={listing.title} className="mt-1 min-h-[1.75rem] truncate text-xl font-semibold text-slate-900">
             {displayTitle}
           </h3>
-          <p title={listing.summary} className="mt-2 min-h-[2.5rem] text-sm leading-6 text-slate-600">
+          <p title={listing.summary} className="mt-2 min-h-[2.5rem] overflow-hidden break-words text-sm leading-6 text-slate-600">
             {displaySummary}
           </p>
         </div>
