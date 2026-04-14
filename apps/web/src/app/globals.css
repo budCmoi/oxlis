@@ -208,7 +208,5 @@ button,
   min-height: 100vh;
   width: 100%;
   flex-direction: column;
-  will-change: transform, opacity, filter;
   backface-visibility: hidden;
-  transform: translateZ(0);
 }
