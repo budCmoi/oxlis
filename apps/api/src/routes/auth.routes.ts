@@ -4,7 +4,7 @@ import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../config/env";
-import { verifyAppleIdentityToken, verifyGoogleAccessToken } from "../lib/social-auth";
+import { verifyAppleIdentityToken, verifyGoogleSignIn } from "../lib/social-auth";
 import { prisma } from "../lib/prisma";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 
@@ -22,11 +22,17 @@ const loginSchema = z.object({
   password: z.string().min(6),
 });
 
-const googleLoginSchema = z.object({
-  accessToken: z.string().min(1),
-  role: z.enum(["BUYER", "SELLER", "BOTH"]).optional(),
-  name: z.string().trim().min(2).max(120).optional(),
-});
+const googleLoginSchema = z
+  .object({
+    accessToken: z.string().min(1).optional(),
+    idToken: z.string().min(1).optional(),
+    role: z.enum(["BUYER", "SELLER", "BOTH"]).optional(),
+    name: z.string().trim().min(2).max(120).optional(),
+  })
+  .refine((payload) => Boolean(payload.accessToken?.trim() || payload.idToken?.trim()), {
+    message: "Un jeton Google est requis",
+    path: ["accessToken"],
+  });
 
 const appleLoginSchema = z.object({
   idToken: z.string().min(1),
@@ -167,7 +173,7 @@ async function completeSocialLogin({
 
   const existingProviderLink = user.socialAccounts.find((account) => account.provider === providerEnum);
 
-  if (existingProviderLink && existingProviderLink.providerUserId !== providerUserId) {
+  if (existingProviderLink && existingProviderLink.providerUserId !== providerUserId && existingProviderLink.email !== email) {
     throw new Error(`Ce compte est deja lie a un autre identifiant ${providerLabel}`);
   }
 
@@ -293,7 +299,10 @@ router.post("/google", async (req, res) => {
   }
 
   try {
-    const identity = await verifyGoogleAccessToken(parsed.data.accessToken);
+    const identity = await verifyGoogleSignIn({
+      accessToken: parsed.data.accessToken,
+      idToken: parsed.data.idToken,
+    });
 
     return res.json(
       await completeSocialLogin({

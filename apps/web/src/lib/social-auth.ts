@@ -1,5 +1,8 @@
 "use client";
 
+import { FirebaseError, getApp, getApps, initializeApp, type FirebaseOptions } from "firebase/app";
+import { GoogleAuthProvider, getAuth, signInWithPopup, signOut } from "firebase/auth";
+
 type SocialAuthPayload = {
   accessToken?: string;
   idToken?: string;
@@ -94,6 +97,37 @@ function getGoogleClientId() {
   return process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim() || "";
 }
 
+function getFirebaseConfig(): FirebaseOptions | null {
+  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY?.trim();
+  const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN?.trim();
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim();
+  const appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID?.trim();
+
+  if (!apiKey || !authDomain || !projectId || !appId) {
+    return null;
+  }
+
+  return {
+    apiKey,
+    authDomain,
+    projectId,
+    appId,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.trim(),
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID?.trim(),
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID?.trim(),
+  };
+}
+
+function getFirebaseApp() {
+  const config = getFirebaseConfig();
+
+  if (!config) {
+    return null;
+  }
+
+  return getApps().length > 0 ? getApp() : initializeApp(config);
+}
+
 function getAppleClientId() {
   return process.env.NEXT_PUBLIC_APPLE_CLIENT_ID?.trim() || "";
 }
@@ -131,6 +165,32 @@ function mapGoogleError(error: unknown) {
 
   if (googleError?.type === "popup_failed_to_open") {
     return buildProviderError("Google", "le navigateur a bloque la fenetre popup");
+  }
+
+  return buildProviderError("Google", "connexion impossible");
+}
+
+function mapFirebaseAuthError(error: unknown) {
+  if (error instanceof FirebaseError) {
+    if (error.code === "auth/popup-closed-by-user") {
+      return buildProviderError("Google", "la fenetre a ete fermee avant la fin de la connexion");
+    }
+
+    if (error.code === "auth/popup-blocked") {
+      return buildProviderError("Google", "le navigateur a bloque la fenetre popup");
+    }
+
+    if (error.code === "auth/unauthorized-domain") {
+      return buildProviderError("Google", "le domaine actuel n'est pas autorise pour la connexion");
+    }
+
+    if (error.code === "auth/operation-not-allowed") {
+      return buildProviderError("Google", "la connexion Google n'est pas activee pour ce projet Firebase");
+    }
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return buildProviderError("Google", error.message.trim());
   }
 
   return buildProviderError("Google", "connexion impossible");
@@ -195,6 +255,32 @@ async function signInWithGooglePopupDirect(): Promise<SocialAuthPayload> {
   });
 }
 
+async function signInWithGooglePopupViaFirebase(): Promise<SocialAuthPayload> {
+  const app = getFirebaseApp();
+
+  if (!app) {
+    throw new Error("La connexion Google n'est pas configuree sur ce site");
+  }
+
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+
+  try {
+    const result = await signInWithPopup(auth, provider);
+
+    return {
+      idToken: await result.user.getIdToken(),
+      email: result.user.email,
+      name: result.user.displayName,
+    };
+  } catch (error) {
+    throw mapFirebaseAuthError(error);
+  } finally {
+    await signOut(auth).catch(() => undefined);
+  }
+}
+
 async function signInWithApplePopupDirect(): Promise<SocialAuthPayload> {
   const clientId = getAppleClientId();
   const redirectUri = getAppleRedirectUri();
@@ -238,7 +324,7 @@ async function signInWithApplePopupDirect(): Promise<SocialAuthPayload> {
 }
 
 export function isGoogleAuthConfigured() {
-  return Boolean(getGoogleClientId());
+  return Boolean(getGoogleClientId() || getFirebaseConfig());
 }
 
 export function isAppleAuthConfigured() {
@@ -246,7 +332,11 @@ export function isAppleAuthConfigured() {
 }
 
 export async function signInWithGooglePopup(): Promise<SocialAuthPayload> {
-  return signInWithGooglePopupDirect();
+  if (getGoogleClientId()) {
+    return signInWithGooglePopupDirect();
+  }
+
+  return signInWithGooglePopupViaFirebase();
 }
 
 export async function signInWithApplePopup(): Promise<SocialAuthPayload> {

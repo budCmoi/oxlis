@@ -28,7 +28,14 @@ type GoogleUserInfoResponse = {
   name?: string;
 };
 
+const firebaseJwks = createRemoteJWKSet(
+  new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"),
+);
 const appleJwks = createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
+
+function getFirebaseIssuer(projectId: string) {
+  return `https://securetoken.google.com/${projectId}`;
+}
 
 function normalizeEmail(value: unknown) {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
@@ -41,6 +48,10 @@ function parseBooleanLike(value: unknown) {
 function buildDefaultName(email: string, fallback: string) {
   const candidate = email.split("@")[0]?.trim();
   return candidate || fallback;
+}
+
+function getObjectRecord(value: unknown) {
+  return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
 }
 
 function getJwtPayload(idToken: string) {
@@ -132,6 +143,76 @@ export async function verifyGoogleAccessToken(accessToken: string): Promise<Veri
     email,
     name: name || buildDefaultName(email, "Utilisateur Google"),
   };
+}
+
+export async function verifyGoogleFirebaseToken(idToken: string): Promise<VerifiedSocialIdentity> {
+  if (!env.FIREBASE_PROJECT_ID) {
+    throw new Error("La connexion Google n'est pas configuree sur le serveur");
+  }
+
+  const { payload } = await jwtVerify(idToken, firebaseJwks, {
+    issuer: getFirebaseIssuer(env.FIREBASE_PROJECT_ID),
+    audience: env.FIREBASE_PROJECT_ID,
+  }).catch(() => {
+    throw new Error("Jeton Google invalide");
+  });
+
+  const email = normalizeEmail(payload.email);
+  const providerUserId = typeof payload.user_id === "string" && payload.user_id.trim()
+    ? payload.user_id.trim()
+    : typeof payload.sub === "string"
+      ? payload.sub.trim()
+      : "";
+
+  if (!email || !providerUserId) {
+    throw new Error("Le jeton Google ne contient pas d'identite exploitable");
+  }
+
+  if (!parseBooleanLike(payload.email_verified)) {
+    throw new Error("Le compte Google doit avoir une adresse e-mail verifiee");
+  }
+
+  const firebasePayload = getObjectRecord(payload.firebase);
+  const providerId = typeof firebasePayload?.sign_in_provider === "string" ? firebasePayload.sign_in_provider.trim() : "";
+
+  if (providerId !== "google.com") {
+    throw new Error("Ce jeton n'est pas issu d'une connexion Google");
+  }
+
+  const name = typeof payload.name === "string" ? payload.name.trim() : "";
+
+  return {
+    provider: "google",
+    providerUserId,
+    email,
+    name: name || buildDefaultName(email, "Utilisateur Google"),
+  };
+}
+
+export async function verifyGoogleSignIn({
+  accessToken,
+  idToken,
+}: {
+  accessToken?: string;
+  idToken?: string;
+}): Promise<VerifiedSocialIdentity> {
+  const normalizedAccessToken = accessToken?.trim() || "";
+
+  if (normalizedAccessToken) {
+    return verifyGoogleAccessToken(normalizedAccessToken);
+  }
+
+  const normalizedIdToken = idToken?.trim() || "";
+
+  if (normalizedIdToken) {
+    return verifyGoogleFirebaseToken(normalizedIdToken);
+  }
+
+  if (!env.GOOGLE_CLIENT_ID && !env.FIREBASE_PROJECT_ID) {
+    throw new Error("La connexion Google n'est pas configuree sur le serveur");
+  }
+
+  throw new Error("Jeton Google invalide");
 }
 
 export async function verifyAppleIdentityToken(idToken: string): Promise<VerifiedSocialIdentity> {

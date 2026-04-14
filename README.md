@@ -45,7 +45,7 @@ cp apps/web/.env.local.example apps/web/.env.local
 
 Set a dedicated `ATTACHMENTS_ENCRYPTION_KEY` in `apps/api/.env` for production-grade chat attachment encryption at rest.
 
-If you want Google or Apple sign-in, set `GOOGLE_CLIENT_ID` and `APPLE_CLIENT_ID` in `apps/api/.env`, then set `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_APPLE_CLIENT_ID`, and `NEXT_PUBLIC_APPLE_REDIRECT_URI` in `apps/web/.env.local`.
+If you want Google sign-in, either set `GOOGLE_CLIENT_ID` in `apps/api/.env` with `NEXT_PUBLIC_GOOGLE_CLIENT_ID` in `apps/web/.env.local`, or set `FIREBASE_PROJECT_ID` in `apps/api/.env` with the `NEXT_PUBLIC_FIREBASE_*` values in `apps/web/.env.local`. Apple sign-in still uses `APPLE_CLIENT_ID`, `NEXT_PUBLIC_APPLE_CLIENT_ID`, and `NEXT_PUBLIC_APPLE_REDIRECT_URI`.
 
 3. Start PostgreSQL
 
@@ -121,12 +121,20 @@ Why this path:
 
 - `CLIENT_URL`
 - `GOOGLE_CLIENT_ID`
+- `FIREBASE_PROJECT_ID`
 - `APPLE_CLIENT_ID`
 
 5. Provide these frontend environment variables:
 
 - `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
 - `NEXT_PUBLIC_APPLE_CLIENT_ID`
 - `NEXT_PUBLIC_APPLE_REDIRECT_URI`
 
@@ -143,8 +151,8 @@ Notes:
 - `JWT_SECRET` and `ATTACHMENTS_ENCRYPTION_KEY` are generated automatically by the Render blueprint for the API service
 - `DATABASE_URL` is injected automatically from the `oxlis-db` Render Postgres instance
 - on Render Free, `preDeployCommand` is not available, so the API service runs `npm run prisma:migrate:deploy && npm start` as its start command
-- Google and Apple sign-in are verified directly by the API and linked to users through Prisma `SocialAccount` rows
-- Google and Apple client IDs must still be created in Google Cloud Console and Apple Developer
+- Google sign-in can use either a direct Google OAuth client ID or Firebase Auth, and both flows are linked to users through Prisma `SocialAccount` rows
+- Apple sign-in is verified directly by the API and still requires an Apple client ID
 - Render Free services spin down after inactivity, so the first request after idle can take around a minute
 - Render Free Postgres expires after 30 days, and each workspace can only have one active free Render Postgres database
 

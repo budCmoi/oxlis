@@ -8,6 +8,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(8),
   ATTACHMENTS_ENCRYPTION_KEY: z.string().min(16).optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  FIREBASE_PROJECT_ID: z.string().min(1).optional(),
   APPLE_CLIENT_ID: z.string().min(1).optional(),
   PORT: z.string().default("4000"),
   CLIENT_URL: z.string().default("http://localhost:3000"),
