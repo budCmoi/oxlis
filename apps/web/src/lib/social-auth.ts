@@ -1,7 +1,7 @@
 "use client";
 
 import { FirebaseError, getApp, getApps, initializeApp, type FirebaseOptions } from "firebase/app";
-import { GoogleAuthProvider, getAuth, signInWithPopup, signOut } from "firebase/auth";
+import { GoogleAuthProvider, OAuthProvider, getAuth, signInWithPopup, signOut } from "firebase/auth";
 
 type SocialAuthPayload = {
   accessToken?: string;
@@ -170,30 +170,30 @@ function mapGoogleError(error: unknown) {
   return buildProviderError("Google", "connexion impossible");
 }
 
-function mapFirebaseAuthError(error: unknown) {
+function mapFirebaseAuthError(error: unknown, providerLabel: "Google" | "Apple") {
   if (error instanceof FirebaseError) {
     if (error.code === "auth/popup-closed-by-user") {
-      return buildProviderError("Google", "la fenetre a ete fermee avant la fin de la connexion");
+      return buildProviderError(providerLabel, "la fenetre a ete fermee avant la fin de la connexion");
     }
 
     if (error.code === "auth/popup-blocked") {
-      return buildProviderError("Google", "le navigateur a bloque la fenetre popup");
+      return buildProviderError(providerLabel, "le navigateur a bloque la fenetre popup");
     }
 
     if (error.code === "auth/unauthorized-domain") {
-      return buildProviderError("Google", "le domaine actuel n'est pas autorise pour la connexion");
+      return buildProviderError(providerLabel, "le domaine actuel n'est pas autorise pour la connexion");
     }
 
     if (error.code === "auth/operation-not-allowed") {
-      return buildProviderError("Google", "la connexion Google n'est pas activee pour ce projet Firebase");
+      return buildProviderError(providerLabel, `la connexion ${providerLabel} n'est pas activee pour ce projet Firebase`);
     }
   }
 
   if (error instanceof Error && error.message.trim()) {
-    return buildProviderError("Google", error.message.trim());
+    return buildProviderError(providerLabel, error.message.trim());
   }
 
-  return buildProviderError("Google", "connexion impossible");
+  return buildProviderError(providerLabel, "connexion impossible");
 }
 
 function mapAppleError(error: unknown) {
@@ -263,8 +263,35 @@ async function signInWithGooglePopupViaFirebase(): Promise<SocialAuthPayload> {
   }
 
   const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: "select_account" });
+
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    const result = await signInWithPopup(auth, provider);
+
+    return {
+      idToken: await result.user.getIdToken(),
+      email: result.user.email,
+      name: result.user.displayName,
+    };
+  } catch (error) {
+    throw mapFirebaseAuthError(error, "Google");
+  } finally {
+    await signOut(auth).catch(() => undefined);
+  }
+}
+
+async function signInWithApplePopupViaFirebase(): Promise<SocialAuthPayload> {
+  const app = getFirebaseApp();
+
+  if (!app) {
+    throw new Error("La connexion Apple n'est pas configuree sur ce site");
+  }
+
+  const auth = getAuth(app);
+  const provider = new OAuthProvider("apple.com");
+  provider.addScope("email");
+  provider.addScope("name");
 
   try {
     const result = await signInWithPopup(auth, provider);
@@ -275,7 +302,7 @@ async function signInWithGooglePopupViaFirebase(): Promise<SocialAuthPayload> {
       name: result.user.displayName,
     };
   } catch (error) {
-    throw mapFirebaseAuthError(error);
+    throw mapFirebaseAuthError(error, "Apple");
   } finally {
     await signOut(auth).catch(() => undefined);
   }
@@ -328,7 +355,7 @@ export function isGoogleAuthConfigured() {
 }
 
 export function isAppleAuthConfigured() {
-  return Boolean(getAppleClientId());
+  return Boolean(getAppleClientId() || getFirebaseConfig());
 }
 
 export async function signInWithGooglePopup(): Promise<SocialAuthPayload> {
@@ -340,5 +367,9 @@ export async function signInWithGooglePopup(): Promise<SocialAuthPayload> {
 }
 
 export async function signInWithApplePopup(): Promise<SocialAuthPayload> {
-  return signInWithApplePopupDirect();
+  if (getAppleClientId()) {
+    return signInWithApplePopupDirect();
+  }
+
+  return signInWithApplePopupViaFirebase();
 }

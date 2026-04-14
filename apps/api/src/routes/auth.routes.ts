@@ -4,7 +4,7 @@ import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../config/env";
-import { verifyAppleIdentityToken, verifyGoogleSignIn } from "../lib/social-auth";
+import { verifyAppleSignIn, verifyGoogleSignIn } from "../lib/social-auth";
 import { prisma } from "../lib/prisma";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 
@@ -328,7 +328,7 @@ router.post("/apple", async (req, res) => {
   }
 
   try {
-    const identity = await verifyAppleIdentityToken(parsed.data.idToken);
+    const identity = await verifyAppleSignIn(parsed.data.idToken);
 
     return res.json(
       await completeSocialLogin({

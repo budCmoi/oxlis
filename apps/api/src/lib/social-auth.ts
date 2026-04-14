@@ -10,6 +10,8 @@ export type VerifiedSocialIdentity = {
   name: string;
 };
 
+type SupportedFirebaseProvider = "google.com" | "apple.com";
+
 type GoogleTokenInfoResponse = {
   aud?: string;
   issued_to?: string;
@@ -145,9 +147,20 @@ export async function verifyGoogleAccessToken(accessToken: string): Promise<Veri
   };
 }
 
-export async function verifyGoogleFirebaseToken(idToken: string): Promise<VerifiedSocialIdentity> {
+function getFirebaseProviderLabel(provider: SupportedFirebaseProvider) {
+  return provider === "google.com" ? "Google" : "Apple";
+}
+
+function getFirebaseProviderFallback(provider: SupportedFirebaseProvider) {
+  return provider === "google.com" ? "Utilisateur Google" : "Utilisateur Apple";
+}
+
+async function verifyFirebaseIdentityToken(
+  idToken: string,
+  expectedProvider: SupportedFirebaseProvider,
+): Promise<VerifiedSocialIdentity> {
   if (!env.FIREBASE_PROJECT_ID) {
-    throw new Error("La connexion Google n'est pas configuree sur le serveur");
+    throw new Error("La connexion sociale n'est pas configuree sur le serveur");
   }
 
   const { payload } = await jwtVerify(idToken, firebaseJwks, {
@@ -175,18 +188,26 @@ export async function verifyGoogleFirebaseToken(idToken: string): Promise<Verifi
   const firebasePayload = getObjectRecord(payload.firebase);
   const providerId = typeof firebasePayload?.sign_in_provider === "string" ? firebasePayload.sign_in_provider.trim() : "";
 
-  if (providerId !== "google.com") {
-    throw new Error("Ce jeton n'est pas issu d'une connexion Google");
+  if (providerId !== expectedProvider) {
+    throw new Error(`Ce jeton n'est pas issu d'une connexion ${getFirebaseProviderLabel(expectedProvider)}`);
   }
 
   const name = typeof payload.name === "string" ? payload.name.trim() : "";
 
   return {
-    provider: "google",
+    provider: expectedProvider === "google.com" ? "google" : "apple",
     providerUserId,
     email,
-    name: name || buildDefaultName(email, "Utilisateur Google"),
+    name: name || buildDefaultName(email, getFirebaseProviderFallback(expectedProvider)),
   };
+}
+
+export async function verifyGoogleFirebaseToken(idToken: string): Promise<VerifiedSocialIdentity> {
+  return verifyFirebaseIdentityToken(idToken, "google.com");
+}
+
+export async function verifyAppleFirebaseToken(idToken: string): Promise<VerifiedSocialIdentity> {
+  return verifyFirebaseIdentityToken(idToken, "apple.com");
 }
 
 export async function verifyGoogleSignIn({
@@ -246,4 +267,23 @@ export async function verifyAppleIdentityToken(idToken: string): Promise<Verifie
     email,
     name: name || buildDefaultName(email, "Utilisateur Apple"),
   };
+}
+
+export async function verifyAppleSignIn(idToken: string): Promise<VerifiedSocialIdentity> {
+  const normalizedIdToken = idToken.trim();
+  const issuer = detectIdentityTokenIssuer(normalizedIdToken);
+
+  if (issuer === "https://appleid.apple.com") {
+    return verifyAppleIdentityToken(normalizedIdToken);
+  }
+
+  if (env.FIREBASE_PROJECT_ID) {
+    return verifyAppleFirebaseToken(normalizedIdToken);
+  }
+
+  if (env.APPLE_CLIENT_ID) {
+    return verifyAppleIdentityToken(normalizedIdToken);
+  }
+
+  throw new Error("La connexion Apple n'est pas configuree sur le serveur");
 }

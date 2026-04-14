@@ -9,6 +9,25 @@ import { isAppleAuthConfigured, isGoogleAuthConfigured, signInWithApplePopup, si
 import { apiRequest } from "@/lib/api";
 import { User } from "@/types";
 
+function GoogleLogo() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.7 3.9-5.5 3.9-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.6 12 2.6A9.4 9.4 0 0 0 2.6 12 9.4 9.4 0 0 0 12 21.4c5.4 0 9-3.8 9-9.1 0-.6-.1-1.1-.1-1.5H12Z" />
+      <path fill="#34A853" d="M2.6 7.9l3.2 2.3A6 6 0 0 1 12 6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.6 12 2.6c-3.7 0-6.9 2.1-8.5 5.3Z" />
+      <path fill="#FBBC05" d="M12 21.4c2.5 0 4.7-.8 6.3-2.3l-2.9-2.2c-.8.5-1.8.9-3.4.9a6 6 0 0 1-5.7-4.1l-3.2 2.4A9.4 9.4 0 0 0 12 21.4Z" />
+      <path fill="#4285F4" d="M21 12.3c0-.6-.1-1.1-.2-1.6H12v3.9h5.1c-.2 1-.8 2-1.7 2.8l2.9 2.2c1.7-1.6 2.7-4 2.7-7.3Z" />
+    </svg>
+  );
+}
+
+function AppleLogo() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden="true">
+      <path d="M16.7 12.8c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.8-3.5.8-.8 0-1.9-.8-3.1-.8-1.6 0-3 .9-3.8 2.2-1.6 2.8-.4 7 1.1 9.1.7 1 1.6 2.2 2.8 2.2 1.1 0 1.6-.7 3-.7 1.4 0 1.8.7 3 .7 1.2 0 2-.9 2.7-1.9.8-1.1 1.1-2.2 1.1-2.2-.1 0-3.9-1.5-3.9-6.1Zm-2.3-6.8c.6-.8 1-1.9.9-3-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.8-.9 2.9 1 0 2-.5 2.6-1.3Z" />
+    </svg>
+  );
+}
+
 export default function AuthPage() {
   return (
     <Suspense fallback={<p className="mx-auto max-w-md px-4 py-10 text-sm text-slate-500">Chargement de la connexion...</p>}>
@@ -184,24 +203,26 @@ function AuthContent() {
                 {googleAuthAvailable ? (
                   <button
                     type="button"
+                    aria-label="Continuer avec Google"
+                    title="Google"
                     onClick={() => submitWithSocial("google")}
                     disabled={activeSocialProvider !== null}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {activeSocialProvider === "google" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <span className="text-base">G</span>}
-                    <span>Continuer avec Google</span>
+                    {activeSocialProvider === "google" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <GoogleLogo />}
                   </button>
                 ) : null}
 
                 {appleAuthAvailable ? (
                   <button
                     type="button"
+                    aria-label="Continuer avec Apple"
+                    title="Apple"
                     onClick={() => submitWithSocial("apple")}
                     disabled={activeSocialProvider !== null}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {activeSocialProvider === "apple" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <span className="text-base">A</span>}
-                    <span>Continuer avec Apple</span>
+                    {activeSocialProvider === "apple" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <AppleLogo />}
                   </button>
                 ) : null}
               </div>
