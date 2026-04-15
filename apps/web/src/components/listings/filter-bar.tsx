@@ -26,7 +26,7 @@ export function FilterBar({ filters, setFilters, onApply }: Props) {
             onChange={(e) => setFilters((prev) => ({ ...prev, priceMin: e.target.value }))}
             type="number"
             placeholder="Ex: 25000"
-            className="px-4 py-3 text-sm"
+            className="w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="block">
@@ -36,7 +36,7 @@ export function FilterBar({ filters, setFilters, onApply }: Props) {
             onChange={(e) => setFilters((prev) => ({ ...prev, priceMax: e.target.value }))}
             type="number"
             placeholder="Ex: 350000"
-            className="px-4 py-3 text-sm"
+            className="w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="block">
@@ -45,7 +45,7 @@ export function FilterBar({ filters, setFilters, onApply }: Props) {
             value={filters.niche}
             onChange={(e) => setFilters((prev) => ({ ...prev, niche: e.target.value }))}
             placeholder="SaaS, IA, media..."
-            className="px-4 py-3 text-sm"
+            className="w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="block">
@@ -54,7 +54,7 @@ export function FilterBar({ filters, setFilters, onApply }: Props) {
             value={filters.type}
             onChange={(e) => setFilters((prev) => ({ ...prev, type: e.target.value }))}
             placeholder="Application, e-commerce..."
-            className="px-4 py-3 text-sm"
+            className="w-full px-4 py-3 text-sm"
           />
         </label>
         <button onClick={onApply} className="studio-button-primary min-h-[56px] text-sm">
