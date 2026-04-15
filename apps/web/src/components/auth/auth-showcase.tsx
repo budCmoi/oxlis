@@ -52,14 +52,14 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
 
   return (
     <aside
-      className={`overflow-hidden rounded-[28px] border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_32%),radial-gradient(circle_at_bottom_left,#bfdbfe,transparent_30%),linear-gradient(135deg,#0f172a,#111827_48%,#0f172a)] p-2.5 shadow-sm sm:rounded-[32px] sm:p-3 lg:flex lg:h-full lg:flex-col ${className}`}
+      className={`image-slider-motion overflow-hidden rounded-[28px] border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_32%),radial-gradient(circle_at_bottom_left,#bfdbfe,transparent_30%),linear-gradient(135deg,#0f172a,#111827_48%,#0f172a)] p-2.5 shadow-sm sm:rounded-[32px] sm:p-3 lg:flex lg:h-full lg:flex-col ${className}`}
     >
       <div className="relative overflow-hidden rounded-[20px] bg-slate-950 sm:rounded-[24px] lg:min-h-0 lg:flex-1">
         <div className={imageWrapperClassName}>
           {previewSlides.map((slide, index) => (
             <div
               key={slide.src}
-              className={`absolute inset-0 transition-all duration-700 ${
+              className={`auth-showcase-slide absolute inset-0 transition-all duration-700 ${
                 index === activePreview
                   ? "translate-x-0 opacity-100"
                   : index < activePreview
@@ -99,7 +99,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
                   type="button"
                   onClick={() => setActivePreview(index)}
                   aria-label={`Afficher l'apercu ${index + 1}`}
-                  className={`h-2.5 rounded-full transition ${index === activePreview ? "w-6 bg-teal-300" : "w-2.5 bg-white/30"}`}
+                  className={`auth-showcase-dot h-2.5 rounded-full transition ${index === activePreview ? "w-6 bg-teal-300" : "w-2.5 bg-white/30"}`}
                 />
               ))}
             </div>
@@ -109,7 +109,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
                 type="button"
                 onClick={() => movePreview(-1)}
                 aria-label="Apercu precedent"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+                className="auth-showcase-control inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -117,7 +117,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
                 type="button"
                 onClick={() => movePreview(1)}
                 aria-label="Apercu suivant"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+                className="auth-showcase-control inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -135,7 +135,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
               type="button"
               onClick={() => movePreview(-1)}
               aria-label="Apercu precedent"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+              className="auth-showcase-control inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -143,7 +143,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
               type="button"
               onClick={() => movePreview(1)}
               aria-label="Apercu suivant"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+              className="auth-showcase-control inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -158,7 +158,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
             type="button"
             onClick={() => setActivePreview(index)}
             aria-label={`Aller a l'apercu ${index + 1}`}
-            className={`flex h-[190px] w-[168px] shrink-0 flex-none flex-col overflow-hidden rounded-2xl border text-left transition ${
+            className={`auth-showcase-card flex h-[190px] w-[168px] shrink-0 flex-none flex-col overflow-hidden rounded-2xl border text-left transition ${
               index === activePreview ? "border-teal-300/60 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"
             }`}
           >

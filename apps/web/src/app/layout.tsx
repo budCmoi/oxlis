@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Suspense } from "react";
 import { PageTransitionShell } from "@/components/common/page-transition-shell";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
@@ -45,11 +44,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col overflow-x-hidden bg-background text-foreground">
         <div className="site-shell min-h-full flex w-full flex-col">
           <AuthProvider>
-            <Suspense fallback={<AppShell>{children}</AppShell>}>
-              <PageTransitionShell>
-                <AppShell>{children}</AppShell>
-              </PageTransitionShell>
-            </Suspense>
+            <PageTransitionShell>
+              <AppShell>{children}</AppShell>
+            </PageTransitionShell>
           </AuthProvider>
         </div>
       </body>

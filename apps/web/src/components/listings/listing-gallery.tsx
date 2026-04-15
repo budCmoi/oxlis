@@ -48,7 +48,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
   }, [isLightboxOpen, moveSlide, slides.length]);
 
   return (
-    <>
+    <div className="image-slider-motion">
       <div className="space-y-3">
         <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 card-glow">
           <button
@@ -64,7 +64,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
             type="button"
             onClick={() => moveSlide(-1)}
             aria-label="Image precedente"
-            className="absolute left-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:left-4 sm:h-9 sm:w-9"
+            className="listing-gallery-control absolute left-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:left-4 sm:h-9 sm:w-9"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -73,7 +73,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
             type="button"
             onClick={() => moveSlide(1)}
             aria-label="Image suivante"
-            className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:right-4 sm:h-9 sm:w-9"
+            className="listing-gallery-control absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/55 text-white backdrop-blur-sm transition hover:border-teal-300/40 hover:bg-slate-950/75 sm:right-4 sm:h-9 sm:w-9"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -86,7 +86,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
             type="button"
             onClick={() => setIsLightboxOpen(false)}
             aria-label="Fermer l'image agrandie"
-            className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-slate-300/40"
+            className="listing-gallery-control absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-slate-300/40"
           >
             <X className="h-5 w-5" />
           </button>
@@ -99,7 +99,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
                 type="button"
                 onClick={() => moveSlide(-1)}
                 aria-label="Image precedente en grand"
-                className="absolute left-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-teal-300/40"
+                className="listing-gallery-control absolute left-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-teal-300/40"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -108,7 +108,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
                 type="button"
                 onClick={() => moveSlide(1)}
                 aria-label="Image suivante en grand"
-                className="absolute right-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-teal-300/40"
+                className="listing-gallery-control absolute right-4 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 text-white transition hover:border-teal-300/40"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -116,7 +116,7 @@ export function ListingGallery({ listing }: ListingGalleryProps) {
           </div>
         </div>
       ) : null}
-    </>
+    </div>
   );
 }
 

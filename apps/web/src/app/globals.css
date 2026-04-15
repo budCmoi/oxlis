@@ -14,6 +14,16 @@
   --color-muted: var(--muted);
   --font-sans: var(--font-geist-mono);
   --font-mono: var(--font-geist-mono);
+  --text-xs: 0.6rem;
+  --text-sm: 0.7rem;
+  --text-base: 0.8rem;
+  --text-lg: 0.9rem;
+  --text-xl: 1rem;
+  --text-2xl: 1.2rem;
+  --text-3xl: 1.5rem;
+  --text-4xl: 1.8rem;
+  --text-5xl: 2.4rem;
+  --text-6xl: 3rem;
 }
 
 html,
@@ -49,7 +59,6 @@ body {
   z-index: 40;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 200ms ease;
 }
 
 .mobile-sidebar-backdrop {
@@ -61,7 +70,6 @@ body {
 
 .mobile-sidebar-panel {
   transform: translateX(-100%);
-  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 #mobile-nav-toggle:checked ~ .mobile-sidebar-layer {
@@ -123,90 +131,54 @@ button,
   background-color: rgba(148, 163, 184, 0.7);
 }
 
-.card-glow {
-  box-shadow: 0 20px 70px -35px rgba(15, 23, 42, 0.45);
+[class*="text-[10px]"] {
+  font-size: 8px !important;
 }
 
-.listing-gallery-slide {
-  will-change: opacity, transform;
+[class*="text-[11px]"] {
+  font-size: 8.8px !important;
 }
 
-.listing-gallery-image {
-  will-change: transform;
+[class*="text-[13px]"] {
+  font-size: 10.4px !important;
 }
 
-.page-transition-shell {
-  position: relative;
-  min-height: 100vh;
-  isolation: isolate;
+[class*="text-[2.75rem]"] {
+  font-size: 2.2rem !important;
 }
 
-.page-transition-shell[data-transitioning="true"] .page-transition-stage {
-  pointer-events: none;
+body .transition,
+body .transition-all,
+body .transition-colors,
+body .transition-opacity,
+body .transition-shadow,
+body .transition-transform,
+body .duration-75,
+body .duration-100,
+body .duration-150,
+body .duration-200,
+body .duration-300,
+body .duration-500,
+body .duration-700,
+body .animate-spin,
+body .animate-ping,
+body .animate-pulse,
+body .animate-bounce {
+  transition: none !important;
+  animation: none !important;
 }
 
-.page-transition-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 120;
-  pointer-events: none;
-  opacity: 0;
-  overflow: hidden;
-  background: var(--page-transition-scrim, radial-gradient(circle at 50% 20%, rgba(45, 212, 191, 0.16), rgba(15, 23, 42, 0.92) 58%, rgba(2, 6, 23, 0.98)));
-  backdrop-filter: blur(0px);
+body .image-slider-motion .auth-showcase-slide {
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
-.page-transition-panel {
-  position: absolute;
-  inset: -8%;
-  background: var(--page-transition-panel-fill, linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(15, 118, 110, 0.96)));
-  will-change: transform, opacity, filter;
-  transform: translateZ(0);
+body .image-slider-motion .auth-showcase-dot,
+body .image-slider-motion .auth-showcase-control,
+body .image-slider-motion .auth-showcase-card,
+body .image-slider-motion .listing-gallery-control {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease, opacity 150ms ease !important;
 }
 
-.page-transition-panel-secondary {
-  opacity: 0.94;
-}
-
-.page-transition-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 2rem;
-}
-
-.page-transition-accent {
-  width: min(46rem, 76vw);
-  height: 2px;
-  border-radius: 999px;
-  background: var(--page-transition-accent-fill, #99f6e4);
-  box-shadow: 0 0 36px rgba(255, 255, 255, 0.4);
-  will-change: transform, opacity;
-  transform: translateZ(0);
-}
-
-.page-transition-label {
-  max-width: min(90vw, 30rem);
-  text-align: center;
-  font-size: clamp(0.95rem, 1.4vw, 1.2rem);
-  font-weight: 700;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: white;
-  text-shadow: 0 10px 36px rgba(15, 23, 42, 0.42);
-  will-change: transform, opacity;
-}
-
-.page-transition-stage {
-  position: relative;
-  z-index: 0;
-  display: flex;
-  min-height: 100vh;
-  width: 100%;
-  flex-direction: column;
-  backface-visibility: hidden;
+body .image-slider-motion .listing-gallery-image {
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
