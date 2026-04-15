@@ -2,7 +2,7 @@
   "name": "oxlis",
   "version": "1.0.0",
   "private": true,
-  "description": "Marketplace for buying and selling digital businesses",
+  "description": "Full-stack marketplace for buying, selling, and negotiating digital businesses",
   "scripts": {
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
     "dev:web": "npm run dev --prefix apps/web",

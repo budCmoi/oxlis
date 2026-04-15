@@ -1,6 +1,6 @@
 # OXLIS - Digital Business Marketplace
 
-Modern marketplace web app inspired by Flippa where users can buy and sell digital businesses.
+Full-stack marketplace for buying, selling, and negotiating digital businesses, with listings, messaging, offers, escrow workflows, and seller dashboards.
 
 ## Stack
 
