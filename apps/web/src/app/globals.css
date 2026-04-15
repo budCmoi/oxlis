@@ -49,12 +49,6 @@ body {
   font-family: var(--font-manrope), sans-serif;
 }
 
-*,
-*::before,
-*::after {
-  border-radius: 0 !important;
-}
-
 body::before {
   content: "";
   position: fixed;
@@ -110,7 +104,7 @@ body::after {
 .studio-card {
   position: relative;
   overflow: hidden;
-  border: 0;
+  border: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(255, 252, 247, 0.82), rgba(255, 255, 255, 0.66));
   backdrop-filter: blur(18px);
 }
@@ -148,6 +142,7 @@ body::after {
 
 .studio-shell-dark,
 .studio-panel-dark {
+  border-color: rgba(255, 255, 255, 0.1);
   background: linear-gradient(135deg, rgba(18, 16, 13, 0.96), rgba(42, 36, 28, 0.9));
   color: #fff8ed;
 }
@@ -191,7 +186,7 @@ h3 {
   align-items: center;
   gap: 0.5rem;
   border-radius: 999px;
-  border: 0;
+  border: 1px solid rgba(20, 17, 15, 0.08);
   background: rgba(255, 255, 255, 0.6);
   padding: 0.65rem 1rem;
   font-family: var(--font-space-mono), monospace;
@@ -204,7 +199,7 @@ h3 {
 
 .studio-stat {
   border-radius: 1.4rem;
-  border: 0;
+  border: 1px solid rgba(20, 17, 15, 0.08);
   background: rgba(255, 255, 255, 0.58);
   padding: 1rem;
 }
@@ -224,19 +219,19 @@ h3 {
 }
 
 .studio-button-primary {
-  border: 0;
+  border: 1px solid rgba(17, 22, 7, 0.08);
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: var(--accent-ink);
 }
 
 .studio-button-secondary {
-  border: 0;
+  border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.68);
   color: var(--foreground);
 }
 
 .studio-button-ghost {
-  border: 0;
+  border: 1px solid var(--line);
   background: rgba(20, 17, 15, 0.05);
   color: rgba(20, 17, 15, 0.74);
 }
@@ -248,7 +243,9 @@ h3 {
 }
 
 .studio-divider {
-  display: none;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, rgba(20, 17, 15, 0.16), transparent);
 }
 
 a,
@@ -324,11 +321,11 @@ textarea,
 textarea[class],
 select,
 select[class] {
-  border: 0 !important;
-  border-bottom: 1px solid rgba(20, 17, 15, 0.28) !important;
-  background: transparent !important;
+  border: 1px solid rgba(20, 17, 15, 0.1) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-radius: 1.2rem !important;
   color: var(--foreground) !important;
-  box-shadow: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
 }
 
 input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="hidden"]):focus,
@@ -337,15 +334,9 @@ textarea:focus,
 textarea[class]:focus,
 select:focus,
 select[class]:focus {
-  border-bottom-color: var(--foreground) !important;
-  box-shadow: 0 1px 0 0 var(--foreground) !important;
+  border-color: rgba(159, 226, 63, 0.88) !important;
+  box-shadow: 0 0 0 4px rgba(187, 255, 93, 0.18) !important;
   outline: none;
-}
-
-[class*="border"],
-[class*="divide-"] {
-  border: 0 !important;
-  border-color: transparent !important;
 }
 
 input::placeholder,
@@ -355,8 +346,8 @@ textarea::placeholder {
 
 [type="file"]::file-selector-button {
   margin-right: 1rem;
-  border: 0;
-  border-radius: 0;
+  border: 1px solid rgba(17, 22, 7, 0.08);
+  border-radius: 999px;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   padding: 0.78rem 1rem;
   font-size: 0.82rem;
@@ -382,8 +373,8 @@ textarea::placeholder {
 }
 
 .dashboard-scrollbar::-webkit-scrollbar-thumb {
-  border-radius: 0;
-  border: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(20, 17, 15, 0.14);
   background-clip: padding-box;
   background-color: rgba(20, 17, 15, 0.26);
 }
