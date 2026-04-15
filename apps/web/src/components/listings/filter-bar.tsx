@@ -18,7 +18,7 @@ type Props = {
 export function FilterBar({ filters, setFilters, onApply }: Props) {
   return (
     <section className="studio-panel px-4 py-4 sm:px-5 sm:py-5">
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
+      <div className="grid grid-cols-1 gap-3">
         <label className="block">
           <span className="studio-kicker !mb-2 !flex !text-[0.62rem] !tracking-[0.18em]">Prix minimum</span>
           <input
@@ -57,7 +57,7 @@ export function FilterBar({ filters, setFilters, onApply }: Props) {
             className="px-4 py-3 text-sm"
           />
         </label>
-        <button onClick={onApply} className="studio-button-primary min-h-[56px] text-sm xl:self-end">
+        <button onClick={onApply} className="studio-button-primary min-h-[56px] text-sm">
           Appliquer les filtres
         </button>
       </div>
