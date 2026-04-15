@@ -103,25 +103,25 @@ function AuthContent() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-8">
-      <div className="grid gap-6 lg:min-h-[calc(100svh-128px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,35%)] xl:gap-8">
+    <div className="page-shell page-stack pt-4 sm:pt-6">
+      <div className="grid gap-6 lg:min-h-[calc(100svh-136px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.85fr)] xl:gap-8">
         <AuthShowcase className="order-2 lg:order-1" />
 
-        <section className="order-1 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-7 lg:order-2 lg:flex lg:h-full lg:flex-col lg:justify-center">
-          <div className="mb-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">Acces securise</p>
-            <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">Entrez dans votre espace OXLIS</h1>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
+        <section className="studio-shell order-1 px-6 py-6 sm:px-7 sm:py-7 lg:order-2 lg:flex lg:h-full lg:flex-col lg:justify-center">
+          <div className="mb-6" data-page-enter>
+            <p className="studio-kicker">Acces securise</p>
+            <h1 className="mt-4 text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">Entrez dans votre espace OXLIS</h1>
+            <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
               Connectez-vous pour publier une annonce, suivre vos conversations ou avancer sur un deal en cours.
             </p>
           </div>
 
-          <div className="mb-5 flex rounded-xl bg-slate-100 p-1">
+          <div className="mb-5 flex rounded-[1.2rem] border border-[var(--line)] bg-white/55 p-1.5">
             <button
               type="button"
               onClick={() => setIsLogin(true)}
               data-testid="auth-tab-login"
-              className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium sm:text-sm ${isLogin ? "bg-white text-slate-900 shadow" : "text-slate-600"}`}
+              className={`flex-1 rounded-[1rem] px-3 py-3 text-xs font-semibold uppercase tracking-[0.14em] sm:text-sm ${isLogin ? "bg-[linear-gradient(135deg,var(--accent),var(--accent-strong))] text-[color:var(--accent-ink)]" : "text-slate-600"}`}
             >
               Connexion
             </button>
@@ -129,7 +129,7 @@ function AuthContent() {
               type="button"
               onClick={() => setIsLogin(false)}
               data-testid="auth-tab-register"
-              className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium sm:text-sm ${!isLogin ? "bg-white text-slate-900 shadow" : "text-slate-600"}`}
+              className={`flex-1 rounded-[1rem] px-3 py-3 text-xs font-semibold uppercase tracking-[0.14em] sm:text-sm ${!isLogin ? "bg-[linear-gradient(135deg,var(--accent),var(--accent-strong))] text-[color:var(--accent-ink)]" : "text-slate-600"}`}
             >
               Creer un compte
             </button>
@@ -143,7 +143,7 @@ function AuthContent() {
                 placeholder="Nom complet"
                 value={form.name}
                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-teal-400 focus:ring"
+                className="w-full px-4 py-3 text-sm"
               />
             ) : null}
             <input
@@ -153,7 +153,7 @@ function AuthContent() {
               placeholder="E-mail"
               value={form.email}
               onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-teal-400 focus:ring"
+              className="w-full px-4 py-3 text-sm"
             />
             <input
               type="password"
@@ -162,14 +162,14 @@ function AuthContent() {
               placeholder="Mot de passe"
               value={form.password}
               onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-teal-400 focus:ring"
+              className="w-full px-4 py-3 text-sm"
             />
             {!isLogin ? (
               <select
                 aria-label="Role"
                 value={form.role}
                 onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-teal-400 focus:ring"
+                className="w-full px-4 py-3 text-sm"
               >
                 <option value="BUYER">Acheteur</option>
                 <option value="SELLER">Vendeur</option>
@@ -177,7 +177,7 @@ function AuthContent() {
               </select>
             ) : null}
 
-            <button data-testid="auth-submit" className="w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-600">
+            <button data-testid="auth-submit" className="studio-button-primary w-full text-sm">
               {isLogin ? "Connexion" : "Creer un compte"}
             </button>
           </form>
@@ -197,7 +197,7 @@ function AuthContent() {
                   title="Google"
                   onClick={submitWithGoogle}
                   disabled={activeSocialProvider !== null}
-                  className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-800 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-[1.2rem] border border-[var(--line)] bg-white/75 text-slate-800 transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {activeSocialProvider === "google" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <GoogleLogo />}
                 </button>
@@ -206,7 +206,7 @@ function AuthContent() {
           ) : null}
 
           {status ? (
-            <p className={`mt-4 rounded-xl px-4 py-3 text-sm ${isStatusError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
+            <p className={`mt-4 rounded-[1.2rem] px-4 py-3 text-sm ${isStatusError ? "border border-rose-200 bg-rose-50/80 text-rose-700" : "border border-lime-300/40 bg-lime-300/14 text-lime-900"}`}>
               {status}
             </p>
           ) : null}

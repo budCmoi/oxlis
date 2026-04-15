@@ -10,18 +10,18 @@ type ActionButtonProps = {
 export function ActionButton({ busy, children, onClick, variant }: ActionButtonProps) {
   const className =
     variant === "primary"
-      ? "bg-slate-900 text-white hover:bg-teal-600"
+      ? "border border-[rgba(17,22,7,0.08)] bg-[linear-gradient(135deg,var(--accent),var(--accent-strong))] text-[color:var(--accent-ink)] shadow-sm"
       : variant === "secondary"
-        ? "bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-100"
+        ? "border border-[var(--line)] bg-white/75 text-slate-800 hover:-translate-y-0.5 hover:bg-white"
         : variant === "danger"
-          ? "bg-red-50 text-red-700 hover:bg-red-100"
-          : "bg-amber-50 text-amber-800 hover:bg-amber-100";
+          ? "border border-rose-200 bg-rose-50 text-rose-700 hover:-translate-y-0.5 hover:bg-rose-100"
+          : "border border-[var(--line)] bg-[rgba(20,17,15,0.05)] text-slate-700 hover:-translate-y-0.5 hover:bg-[rgba(20,17,15,0.08)]";
 
   return (
     <button
       onClick={onClick}
       disabled={busy}
-      className={`rounded-full px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      className={`rounded-full px-3.5 py-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
     >
       {busy ? "Traitement..." : children}
     </button>

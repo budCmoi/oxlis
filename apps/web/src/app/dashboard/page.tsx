@@ -100,36 +100,37 @@ function DashboardContent() {
   }
 
   if (!data) {
-    return <p className="w-full px-4 py-10 text-sm text-slate-500 sm:px-5 lg:px-6">Chargement du tableau de bord...</p>;
+    return <p className="page-shell px-4 py-10 text-sm text-slate-500">Chargement du tableau de bord...</p>;
   }
 
   return (
-    <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
+    <div className="page-shell page-stack pt-4 sm:pt-6">
       <AnimatedSection
         as="section"
-        className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-5 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-10"
+        className="studio-shell px-5 py-6 sm:px-8 sm:py-8 lg:px-10"
       >
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Pilotage vendeur et deal flow</p>
-            <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">Tableau de bord des annonces, offres et transactions.</h1>
-            <p className="mt-4 text-sm leading-6 text-slate-700 sm:text-base lg:text-lg">
+          <div className="max-w-3xl" data-stagger-item>
+            <p className="studio-kicker">Pilotage vendeur et deal flow</p>
+            <h1 className="mt-4 text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl lg:text-6xl">Tableau de bord des annonces, offres et transactions.</h1>
+            <p className="mt-4 text-sm leading-7 text-slate-700 sm:text-base lg:text-lg">
               Suivez vos actifs en temps reel, pilotez les discussions acheteurs et faites progresser chaque deal jusqu&apos;au sequestre.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
-            <div className="rounded-2xl border border-white/60 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Activite</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">{data.stats.activeListings} actifs en ligne</p>
+            <div className="studio-stat" data-stagger-item>
+              <p className="studio-kicker !text-[0.62rem] !tracking-[0.18em]">Activite</p>
+              <p className="mt-3 text-lg font-semibold text-slate-950">{data.stats.activeListings} actifs en ligne</p>
             </div>
-            <div className="rounded-2xl border border-white/60 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Pipeline</p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">{data.stats.offersReceived} offres recues</p>
+            <div className="studio-stat" data-stagger-item>
+              <p className="studio-kicker !text-[0.62rem] !tracking-[0.18em]">Pipeline</p>
+              <p className="mt-3 text-lg font-semibold text-slate-950">{data.stats.offersReceived} offres recues</p>
             </div>
             <Link
               href="/sell"
-              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-600"
+              className="studio-button-primary text-sm"
+              data-stagger-item
             >
               Creer une annonce
             </Link>
@@ -137,16 +138,16 @@ function DashboardContent() {
         </div>
       </AnimatedSection>
 
-      {error ? <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="rounded-[1.4rem] border border-rose-200 bg-rose-50/80 px-4 py-4 text-sm text-rose-700">{error}</p> : null}
 
-      <AnimatedSection as="section" className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 lg:grid-cols-4" delay={0.08}>
+      <AnimatedSection as="section" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" delay={0.08}>
         <StatCard label="Annonces actives" value={data.stats.activeListings} icon={<LayoutDashboard className="h-4 w-4" />} />
         <StatCard label="Offres recues" value={data.stats.offersReceived} icon={<Handshake className="h-4 w-4" />} />
         <StatCard label="Offres envoyees" value={data.stats.offersMade} icon={<FileText className="h-4 w-4" />} />
         <StatCard label="Conversations" value={data.stats.openConversations} icon={<Inbox className="h-4 w-4" />} />
       </AnimatedSection>
 
-      <AnimatedSection as="section" className="mt-5" delay={0.14}>
+      <AnimatedSection as="section" delay={0.14}>
         <Panel title="Mes annonces" subtitle="Faites glisser horizontalement vos annonces ou utilisez les fleches pour boucler dans le rail.">
           <ListingsRail
             listings={data.listings}
@@ -163,7 +164,7 @@ function DashboardContent() {
         </Panel>
       </AnimatedSection>
 
-      <AnimatedSection as="section" className="mt-4 grid gap-4 md:grid-cols-2 md:items-start" delay={0.2}>
+      <AnimatedSection as="section" className="grid gap-4 md:grid-cols-2 md:items-start" delay={0.2}>
         <Panel
           title="Offres recues"
           subtitle="Acceptez, refusez ou contrez les offres entrantes."

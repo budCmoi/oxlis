@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
+import { Manrope, Space_Mono, Syne } from "next/font/google";
 import { PageTransitionShell } from "@/components/common/page-transition-shell";
+import { SmoothScrollProvider } from "@/components/common/smooth-scroll-provider";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { AuthProvider } from "@/components/providers/auth-provider";
@@ -16,14 +18,20 @@ function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const bodyFont = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const displayFont = Syne({
+  variable: "--font-syne",
   subsets: ["latin"],
+});
+
+const monoFont = Space_Mono({
+  variable: "--font-space-mono",
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -39,14 +47,18 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col overflow-x-hidden bg-background text-foreground">
         <div className="site-shell min-h-full flex w-full flex-col">
           <AuthProvider>
-            <PageTransitionShell>
-              <AppShell>{children}</AppShell>
-            </PageTransitionShell>
+            <Suspense fallback={<AppShell>{children}</AppShell>}>
+              <SmoothScrollProvider>
+                <PageTransitionShell>
+                  <AppShell>{children}</AppShell>
+                </PageTransitionShell>
+              </SmoothScrollProvider>
+            </Suspense>
           </AuthProvider>
         </div>
       </body>

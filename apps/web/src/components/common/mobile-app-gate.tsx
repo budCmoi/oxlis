@@ -42,7 +42,7 @@ export function MobileAppGate() {
 
       <div className="relative z-10 flex min-h-full flex-col px-4 py-4 min-[600px]:px-5 min-[600px]:py-5 min-[800px]:px-6 min-[800px]:py-6">
         <div className="mx-auto flex min-h-full w-full max-w-5xl flex-1 flex-col">
-          <div className="flex min-h-full flex-1 flex-col rounded-[2rem] border border-white/15 bg-white/8 p-4 shadow-[0_30px_120px_-55px_rgba(45,212,191,0.55)] backdrop-blur-xl min-[600px]:p-5 min-[800px]:p-6">
+          <div className="flex min-h-full flex-1 flex-col rounded-[2rem] border border-white/15 bg-white/8 p-4 shadow-sm backdrop-blur-xl min-[600px]:p-5 min-[800px]:p-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-200">
               <Sparkles className="h-3.5 w-3.5" />
               Acces mobile guide

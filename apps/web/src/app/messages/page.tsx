@@ -483,13 +483,13 @@ function MessagesContent() {
   const canSendMessage = Boolean(text.trim() || queuedFiles.length > 0);
 
   return (
-    <div className="w-full px-4 py-4 sm:px-5 sm:py-5 lg:px-6">
-      <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,#ccfbf1,transparent_35%),radial-gradient(circle_at_bottom_right,#bfdbfe,transparent_30%),linear-gradient(135deg,#f8fafc,#eff6ff_45%,#ecfeff)] px-5 py-5 shadow-sm sm:px-6">
+    <div className="page-shell page-stack pt-4 sm:pt-6">
+      <section className="studio-shell overflow-hidden px-5 py-5 sm:px-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Chat deal flow en direct</p>
-            <h1 className="mt-2 text-xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">Messagerie instantanee, lecture en direct et fils negocies comme une vraie app de chat.</h1>
-            <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base">
+            <p className="studio-kicker">Chat deal flow en direct</p>
+            <h1 className="mt-4 text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl lg:text-6xl">Messagerie instantanee, lecture en direct et fils negocies comme une vraie app de chat.</h1>
+            <p className="mt-4 text-sm leading-7 text-slate-700 sm:text-base">
               Les nouveaux messages, la presence, les confirmations de lecture et les pieces jointes chiffrees se synchronisent sans actualiser la page.
             </p>
           </div>
@@ -501,26 +501,26 @@ function MessagesContent() {
         </div>
       </section>
 
-      {error ? <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="rounded-[1.4rem] border border-rose-200 bg-rose-50/80 px-4 py-4 text-sm text-rose-700">{error}</p> : null}
 
       {conversations.length === 0 ? <MessagesEmptyState /> : null}
 
       {conversations.length > 0 ? (
-        <div className="mt-4 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_24px_90px_-46px_rgba(15,23,42,0.45)] sm:mt-5">
+        <div className="overflow-hidden rounded-[2rem] border border-[var(--line)] bg-white/72 shadow-sm backdrop-blur-xl">
           <div className="grid h-[72dvh] max-h-[840px] min-h-[420px] sm:min-h-[520px] md:grid-cols-[320px_minmax(0,1fr)] lg:grid-cols-[360px_minmax(0,1fr)]">
             <aside
               className={clsx(
-                "flex min-h-0 min-w-0 flex-col border-b border-slate-200 bg-[linear-gradient(180deg,#f8fafc,#ffffff)] md:border-b-0 md:border-r",
+                "flex min-h-0 min-w-0 flex-col border-b border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,251,245,0.92),rgba(255,255,255,0.8))] md:border-b-0 md:border-r",
                 activeConversation && !isMobileListOpen ? "hidden md:flex" : "flex",
               )}
             >
-              <div className="border-b border-slate-200 px-4 py-3 sm:px-5">
+              <div className="border-b border-[var(--line)] px-4 py-3 sm:px-5">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Conversations</p>
-                  <h2 className="mt-1 text-xl font-semibold text-slate-900">Messages</h2>
+                  <p className="studio-kicker !text-[0.62rem] !tracking-[0.18em]">Conversations</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">Messages</h2>
                 </div>
 
-                <label className="mt-3 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
+                <label className="mt-3 flex items-center gap-3 rounded-[1.3rem] border border-[var(--line)] bg-white/78 px-3 py-2.5 shadow-sm">
                   <Search className="h-4 w-4 text-slate-400" />
                   <input
                     value={search}
@@ -550,8 +550,8 @@ function MessagesContent() {
                         className={clsx(
                           "w-full rounded-[1.4rem] border px-3 py-2.5 text-left transition",
                           isActive
-                            ? "border-teal-300 bg-teal-50/80 shadow-sm"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50",
+                            ? "border-lime-300/45 bg-lime-300/10 shadow-sm"
+                            : "border-[var(--line)] bg-white/76 hover:-translate-y-0.5 hover:bg-white",
                         )}
                       >
                         <div className="flex items-start gap-3">
@@ -567,7 +567,7 @@ function MessagesContent() {
                                   {lastMessage ? formatConversationTime(lastMessage.createdAt) : formatConversationTime(conversation.createdAt)}
                                 </span>
                                 {conversation.unreadCount > 0 ? (
-                                  <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-teal-600 px-2 py-1 text-[11px] font-semibold text-white">
+                                  <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--accent),var(--accent-strong))] px-2 py-1 text-[11px] font-semibold text-[color:var(--accent-ink)]">
                                     {conversation.unreadCount}
                                   </span>
                                 ) : null}
@@ -584,7 +584,7 @@ function MessagesContent() {
                   })}
 
                   {filteredConversations.length === 0 ? (
-                    <div className="rounded-[1.6rem] border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                    <div className="rounded-[1.6rem] border border-dashed border-[var(--line)] bg-white/58 px-4 py-6 text-sm text-slate-500">
                       Aucun fil ne correspond a votre recherche.
                     </div>
                   ) : null}
@@ -594,18 +594,18 @@ function MessagesContent() {
 
             <section
               className={clsx(
-                "flex min-h-0 min-w-0 flex-col bg-[linear-gradient(180deg,#ffffff,#f8fafc)]",
+                "flex min-h-0 min-w-0 flex-col bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(247,242,234,0.7))]",
                 !activeConversation || isMobileListOpen ? "hidden md:flex" : "flex",
               )}
             >
               {activeConversation ? (
                 <>
-                  <header className="border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur-sm sm:px-5">
+                  <header className="border-b border-[var(--line)] bg-white/86 px-4 py-3 backdrop-blur-sm sm:px-5">
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => setIsMobileListOpen(true)}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 md:hidden"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] bg-white/78 text-slate-600 md:hidden"
                         aria-label="Retour aux conversations"
                       >
                         <ArrowLeft className="h-4 w-4" />
@@ -619,7 +619,7 @@ function MessagesContent() {
                           <span
                             className={clsx(
                               "rounded-full px-2.5 py-1 text-[11px] font-semibold",
-                              counterparty?.online ? "bg-teal-50 text-teal-700" : "bg-slate-100 text-slate-500",
+                              counterparty?.online ? "border border-lime-300/35 bg-lime-300/14 text-lime-800" : "bg-slate-100 text-slate-500",
                             )}
                           >
                             {counterparty?.online ? "En ligne" : "Hors ligne"}
@@ -630,7 +630,7 @@ function MessagesContent() {
                           {activeConversation.listing?.id ? (
                             <>
                               <span className="text-slate-300">/</span>
-                              <Link href={`/listings/${activeConversation.listing.id}`} className="font-medium text-teal-700 hover:text-teal-800">
+                              <Link href={`/listings/${activeConversation.listing.id}`} className="font-medium text-slate-950 hover:text-slate-700">
                                 Voir l&apos;annonce
                               </Link>
                             </>
@@ -643,7 +643,7 @@ function MessagesContent() {
                         onClick={deleteConversation}
                         disabled={isDeletingConversation}
                         data-testid="delete-conversation"
-                        className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 text-xs font-medium text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 text-xs font-medium text-rose-700 transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
                         aria-label="Supprimer ce chat"
                       >
                         {isDeletingConversation ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -654,12 +654,12 @@ function MessagesContent() {
 
                   <div
                     ref={messagesViewportRef}
-                    className="min-h-0 flex-1 overflow-y-auto bg-slate-50 px-3 py-2 dashboard-scrollbar sm:px-4 sm:py-3"
+                    className="min-h-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,255,255,0.22),rgba(255,250,244,0.45))] px-3 py-2 dashboard-scrollbar sm:px-4 sm:py-3"
                   >
                     <div className="flex w-full flex-col gap-2">
                       {timeline.map((item) =>
                         item.type === "day" ? (
-                          <div key={item.key} className="self-start rounded-full border border-slate-200 bg-white px-4 py-1 text-xs font-medium text-slate-500">
+                          <div key={item.key} className="self-start rounded-full border border-[var(--line)] bg-white/80 px-4 py-1.5 text-xs font-medium text-slate-500">
                             {item.label}
                           </div>
                         ) : (
@@ -668,14 +668,14 @@ function MessagesContent() {
                       )}
 
                       {timeline.length === 0 ? (
-                        <div className="max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-sm text-slate-500">
+                        <div className="max-w-md rounded-2xl border border-[var(--line)] bg-white/80 px-4 py-4 text-left text-sm text-slate-500">
                           Aucun message pour le moment. Lancez la conversation pour faire avancer le deal.
                         </div>
                       ) : null}
                     </div>
                   </div>
 
-                  <form onSubmit={sendMessage} className="border-t border-slate-200 bg-white/95 px-3 py-2 backdrop-blur-sm sm:px-4 sm:py-2.5">
+                  <form onSubmit={sendMessage} className="border-t border-[var(--line)] bg-white/86 px-3 py-2 backdrop-blur-sm sm:px-4 sm:py-2.5">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -691,7 +691,7 @@ function MessagesContent() {
                         {queuedFiles.map((file, index) => (
                           <div
                             key={buildLocalFileSignature(file)}
-                            className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600"
+                            className="inline-flex max-w-full items-center gap-2 rounded-full border border-[var(--line)] bg-white/76 px-3 py-1.5 text-xs text-slate-600"
                           >
                             <span className="truncate">{file.name}</span>
                             <span className="text-slate-400">{formatFileSize(file.size)}</span>
@@ -715,13 +715,13 @@ function MessagesContent() {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         data-testid="message-attachments-trigger"
-                        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-teal-300 hover:text-teal-700"
+                        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--line)] bg-white/80 text-slate-600 transition hover:-translate-y-0.5 hover:bg-white"
                         aria-label="Ajouter des pieces jointes"
                       >
                         <Paperclip className="h-4 w-4" />
                       </button>
 
-                      <label className="flex-1 rounded-[1.4rem] border border-slate-200 bg-slate-50 px-3 py-2 shadow-inner shadow-slate-200/20">
+                      <label className="flex-1 rounded-[1.4rem] border border-[var(--line)] bg-white/76 px-3 py-2">
                         <textarea
                           aria-label="Ecrire un message"
                           value={text}
@@ -742,7 +742,7 @@ function MessagesContent() {
                         type="submit"
                         data-testid="send-message"
                         disabled={isSending || !canSendMessage}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--accent),var(--accent-strong))] text-[color:var(--accent-ink)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isSending ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <SendHorizonal className="h-5 w-5" />}
                       </button>
@@ -755,10 +755,10 @@ function MessagesContent() {
                 </>
               ) : (
                 <div className="hidden flex-1 items-center justify-center p-8 md:flex">
-                  <div className="max-w-md rounded-[2rem] border border-slate-200 bg-slate-50 px-6 py-8 text-center shadow-sm">
-                    <p className="text-sm uppercase tracking-[0.12em] text-slate-500">Messagerie</p>
-                    <h2 className="mt-2 text-2xl font-semibold text-slate-900">Selectionnez un fil</h2>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">Choisissez une conversation a gauche pour afficher l&apos;historique, voir les confirmations de lecture et repondre en direct.</p>
+                  <div className="studio-panel max-w-md px-6 py-8 text-center">
+                    <p className="studio-kicker justify-center">Messagerie</p>
+                    <h2 className="mt-3 text-3xl font-semibold text-slate-950">Selectionnez un fil</h2>
+                    <p className="mt-3 text-sm leading-7 text-slate-600">Choisissez une conversation a gauche pour afficher l&apos;historique, voir les confirmations de lecture et repondre en direct.</p>
                   </div>
                 </div>
               )}
@@ -772,12 +772,12 @@ function MessagesContent() {
 
 function MetricCard({ label, value, helper, icon }: { label: string; value: string; helper: string; icon?: React.ReactNode }) {
   return (
-    <div className="rounded-[1.6rem] border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-sm">
+    <div className="studio-stat">
       <div className="flex items-center justify-between gap-2 text-xs uppercase tracking-[0.12em] text-slate-500">
         <span>{label}</span>
         {icon ? <span className="text-slate-500">{icon}</span> : null}
       </div>
-      <p className="mt-2 text-lg font-semibold text-slate-900">{value}</p>
+      <p className="mt-3 text-xl font-semibold text-slate-950">{value}</p>
       <p className="mt-1 text-xs text-slate-500">{helper}</p>
     </div>
   );

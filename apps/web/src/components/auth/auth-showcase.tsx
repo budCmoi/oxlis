@@ -52,9 +52,9 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
 
   return (
     <aside
-      className={`image-slider-motion overflow-hidden rounded-[28px] border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_32%),radial-gradient(circle_at_bottom_left,#bfdbfe,transparent_30%),linear-gradient(135deg,#0f172a,#111827_48%,#0f172a)] p-2.5 shadow-sm sm:rounded-[32px] sm:p-3 lg:flex lg:h-full lg:flex-col ${className}`}
+      className={`image-slider-motion studio-shell studio-shell-dark overflow-hidden p-3 sm:rounded-[2rem] sm:p-4 lg:flex lg:h-full lg:flex-col ${className}`}
     >
-      <div className="relative overflow-hidden rounded-[20px] bg-slate-950 sm:rounded-[24px] lg:min-h-0 lg:flex-1">
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-[#080706] lg:min-h-0 lg:flex-1">
         <div className={imageWrapperClassName}>
           {previewSlides.map((slide, index) => (
             <div
@@ -76,20 +76,20 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
                 className="object-cover"
                 priority={index === 0}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#090705] via-[#090705]/34 to-transparent" />
             </div>
           ))}
 
-          <div className="absolute left-3 top-3 rounded-full border border-white/15 bg-slate-950/45 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-200 backdrop-blur-sm sm:left-5 sm:top-5 sm:px-3 sm:text-xs">
-            Experience OXLIS
+          <div className="absolute left-3 top-3 rounded-full border border-white/10 bg-black/28 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-lime-200 backdrop-blur-sm sm:left-5 sm:top-5 sm:px-3 sm:text-xs">
+            Portfolio du deal flow
           </div>
         </div>
       </div>
 
       <div className="mt-3 px-1 text-white sm:mt-4">
         <div className="sm:hidden">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-slate-300">Apercu {activePreview + 1} / {previewSlides.length}</p>
-          <p className="mt-2 text-sm leading-5 text-slate-100">{previewSlides[activePreview]?.title}</p>
+          <p className="text-[11px] uppercase tracking-[0.16em] text-white/56">Apercu {activePreview + 1} / {previewSlides.length}</p>
+          <p className="mt-2 text-sm leading-6 text-white">{previewSlides[activePreview]?.title}</p>
 
           <div className="mt-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
                   type="button"
                   onClick={() => setActivePreview(index)}
                   aria-label={`Afficher l'apercu ${index + 1}`}
-                  className={`auth-showcase-dot h-2.5 rounded-full transition ${index === activePreview ? "w-6 bg-teal-300" : "w-2.5 bg-white/30"}`}
+                  className={`auth-showcase-dot h-2.5 rounded-full transition ${index === activePreview ? "w-6 bg-lime-300" : "w-2.5 bg-white/30"}`}
                 />
               ))}
             </div>
@@ -109,7 +109,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
                 type="button"
                 onClick={() => movePreview(-1)}
                 aria-label="Apercu precedent"
-                className="auth-showcase-control inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+                className="auth-showcase-control inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/8 text-white transition hover:border-lime-300/35 hover:text-lime-200"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -117,7 +117,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
                 type="button"
                 onClick={() => movePreview(1)}
                 aria-label="Apercu suivant"
-                className="auth-showcase-control inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+                className="auth-showcase-control inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/8 text-white transition hover:border-lime-300/35 hover:text-lime-200"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -127,15 +127,15 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
 
         <div className="hidden sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-300">Defilement automatique</p>
-            <p className="mt-1 text-sm text-slate-200">Un apercu visuel du marketplace, du dashboard et des negociations.</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-white/56">Defilement automatique</p>
+            <p className="mt-2 text-sm leading-6 text-white/76">Un apercu visuel du marketplace, du dashboard et des negociations.</p>
           </div>
           <div className="flex items-center gap-2 self-end sm:self-auto">
             <button
               type="button"
               onClick={() => movePreview(-1)}
               aria-label="Apercu precedent"
-              className="auth-showcase-control inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+              className="auth-showcase-control inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/8 text-white transition hover:border-lime-300/35 hover:text-lime-200"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -143,7 +143,7 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
               type="button"
               onClick={() => movePreview(1)}
               aria-label="Apercu suivant"
-              className="auth-showcase-control inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/40 text-white transition hover:border-teal-300/40 hover:text-teal-200"
+              className="auth-showcase-control inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/8 text-white transition hover:border-lime-300/35 hover:text-lime-200"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -159,14 +159,14 @@ export function AuthShowcase({ className = "", viewportBounded = false }: AuthSh
             onClick={() => setActivePreview(index)}
             aria-label={`Aller a l'apercu ${index + 1}`}
             className={`auth-showcase-card flex h-[190px] w-[168px] shrink-0 flex-none flex-col overflow-hidden rounded-2xl border text-left transition ${
-              index === activePreview ? "border-teal-300/60 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"
+              index === activePreview ? "border-lime-300/45 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"
             }`}
           >
-            <div className="relative aspect-[16/10] w-full flex-none bg-slate-900">
+            <div className="relative aspect-[16/10] w-full flex-none bg-[#0c0a07]">
               <Image src={slide.src} alt={slide.alt} fill sizes="168px" className="object-cover" />
             </div>
             <div className="flex h-[84px] flex-col px-3 py-2 text-white">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300">Slide {index + 1}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/56">Slide {index + 1}</p>
               <p className="mt-1 line-clamp-2 text-sm font-medium leading-5">{slide.title}</p>
             </div>
           </button>

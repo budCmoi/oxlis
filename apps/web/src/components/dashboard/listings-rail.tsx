@@ -44,7 +44,7 @@ export function ListingsRail({ listings, busyKey, onDelete }: ListingsRailProps)
   return (
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
+        <div className="studio-pill self-start">
           {listings.length} annonce{listings.length > 1 ? "s" : ""}
         </div>
 
@@ -53,7 +53,7 @@ export function ListingsRail({ listings, busyKey, onDelete }: ListingsRailProps)
             type="button"
             onClick={() => scrollToIndex(currentIndex - 1)}
             aria-label="Annonce precedente"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-teal-300 hover:text-teal-700"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] bg-white/75 text-slate-700 hover:-translate-y-0.5 hover:bg-white"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -61,11 +61,11 @@ export function ListingsRail({ listings, busyKey, onDelete }: ListingsRailProps)
             type="button"
             onClick={() => scrollToIndex(currentIndex + 1)}
             aria-label="Annonce suivante"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-teal-300 hover:text-teal-700"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] bg-white/75 text-slate-700 hover:-translate-y-0.5 hover:bg-white"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+          <span className="rounded-full border border-[var(--line)] bg-white/60 px-3 py-2 text-xs font-semibold text-slate-600">
             {currentIndex + 1} / {listings.length}
           </span>
         </div>
@@ -78,7 +78,7 @@ export function ListingsRail({ listings, busyKey, onDelete }: ListingsRailProps)
             ref={(node) => {
               itemRefs.current[index] = node;
             }}
-            className="min-w-[280px] max-w-[420px] flex-1 snap-start shrink-0 sm:min-w-[320px]"
+            className="min-w-[300px] max-w-[430px] flex-1 snap-start shrink-0 sm:min-w-[340px]"
           >
             <ListingManagementCard listing={listing} busy={busyKey === `listing-${listing.id}`} onDelete={() => onDelete(listing.id)} />
           </div>

@@ -226,7 +226,7 @@ function renderAttachmentPreview(
 
   if (attachment.category === "VIDEO") {
     return (
-      <div className="relative overflow-hidden rounded-[1rem] border border-slate-200 bg-slate-950 shadow-inner">
+      <div className="relative overflow-hidden rounded-[1rem] border border-slate-200 bg-slate-950 shadow-sm">
         <div className="pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-slate-950/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white backdrop-blur-sm">
           <Video className="h-3.5 w-3.5" />
           Video securisee

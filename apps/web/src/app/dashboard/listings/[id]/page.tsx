@@ -72,20 +72,21 @@ function EditListingContent() {
   };
 
   if (!listing) {
-    return <p className="mx-auto max-w-3xl px-4 py-10 text-sm text-slate-500">Chargement de l&apos;editeur d&apos;annonce...</p>;
+    return <p className="page-shell px-4 py-10 text-sm text-slate-500">Chargement de l&apos;editeur d&apos;annonce...</p>;
   }
 
   const memoFields = parseListingDescription(listing.description);
 
   return (
-    <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
+    <div className="page-shell page-stack pt-4 sm:pt-6">
+      <section className="studio-shell px-6 py-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Modifier l&apos;annonce</h1>
-            <p className="mt-1 text-sm text-slate-600">Mettez a jour les metriques, le positionnement et la stack technique de cet actif.</p>
+            <p className="studio-kicker">Edition vendeur</p>
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950">Modifier l&apos;annonce</h1>
+            <p className="mt-2 text-sm leading-7 text-slate-600">Mettez a jour les metriques, le positionnement et la stack technique de cet actif.</p>
           </div>
-          <Link href="/dashboard" className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+          <Link href="/dashboard" className="studio-button-secondary text-sm">
             Retour
           </Link>
         </div>

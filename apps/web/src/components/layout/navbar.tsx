@@ -42,156 +42,168 @@ export function Navbar() {
 
   return (
     <>
-      <input id="mobile-nav-toggle" type="checkbox" className="mobile-nav-toggle md:hidden" />
+      <input id="mobile-nav-toggle" type="checkbox" className="mobile-nav-toggle xl:hidden" />
 
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-[color:var(--surface)]/95 backdrop-blur">
-      <div className="mx-auto w-full max-w-6xl px-4 py-3 sm:px-6">
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/" className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-900">
-            <Building2 className="h-5 w-5 text-teal-600" />
-            OXLIS
-          </Link>
+      <header className="sticky top-0 z-40 px-3 pt-3 sm:px-4 lg:px-6">
+        <div className="page-shell !px-0">
+          <div data-page-enter className="studio-shell border-white/45 bg-[rgba(255,250,242,0.72)] px-4 py-4 sm:px-6">
+            <div className="flex items-center justify-between gap-3 xl:grid xl:grid-cols-[minmax(0,280px)_1fr_minmax(0,280px)] xl:gap-4">
+              <Link href="/" className="inline-flex min-w-0 flex-1 items-center gap-3 text-slate-900 xl:flex-none">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#14110f,#2b241b)] text-white shadow-sm">
+                  <Building2 className="h-5 w-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="studio-kicker !text-[0.58rem] !tracking-[0.2em]">Digital deal flow</span>
+                  <span className="mt-1 block truncate text-[1.45rem] font-bold tracking-[-0.08em] sm:text-[1.6rem]">OXLIS</span>
+                </span>
+              </Link>
 
-          <nav className="hidden items-center gap-2 md:flex">
+              <nav className="hidden items-center justify-center gap-2 xl:flex">
+                {coreLinks.map((link) => {
+                  const isActive = isLinkActive(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`rounded-full px-3.5 py-2.5 text-[13px] font-semibold ${
+                        isActive
+                          ? "bg-[linear-gradient(135deg,var(--accent),var(--accent-strong))] text-[color:var(--accent-ink)] shadow-sm"
+                          : "bg-white/55 text-slate-700 hover:-translate-y-0.5 hover:bg-white hover:text-slate-950"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div className="hidden items-center justify-end gap-2 xl:flex">
+                {!isAuthenticated ? (
+                  <>
+                    <Link href="/auth" className="studio-button-secondary px-4 py-2.5 text-[13px]">
+                      Connexion
+                    </Link>
+                    <Link href="/sell" className="studio-button-primary px-4 py-2.5 text-[13px]">
+                      Vendre maintenant
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <div className="rounded-full border border-white/40 bg-white/55 px-4 py-2.5 text-[13px] font-semibold text-slate-700 shadow-sm">
+                      {user?.name}
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      aria-label="Deconnexion"
+                      data-testid="logout-button"
+                      className="studio-button-secondary px-4 py-2.5 text-[13px]"
+                    >
+                      Deconnexion
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex shrink-0 items-center justify-end gap-2 xl:hidden">
+                <label
+                  htmlFor="mobile-nav-toggle"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Ouvrir le menu"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/45 bg-white/70 text-slate-700 shadow-sm"
+                >
+                  <Menu className="h-5 w-5" />
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="mobile-sidebar-layer xl:hidden">
+        <label htmlFor="mobile-nav-toggle" className="mobile-sidebar-backdrop" aria-label="Fermer le menu" />
+
+        <aside className="mobile-sidebar-panel absolute inset-y-0 left-0 flex h-full w-[min(90vw,23rem)] flex-col border-r border-white/10 bg-[linear-gradient(180deg,#15120f,#221d16)] p-4 shadow-sm">
+          <div className="studio-panel-dark rounded-[1.8rem] p-5">
+            <p className="studio-kicker !text-[0.58rem] !tracking-[0.2em] !text-lime-200/70">Creative marketplace</p>
+
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <Link href="/" className="inline-flex min-w-0 items-center gap-2 text-[1.4rem] font-semibold tracking-[-0.08em] text-white" onClick={closeSidebar}>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/8">
+                  <Building2 className="h-5 w-5 text-lime-300" />
+                </span>
+                <span className="truncate">OXLIS</span>
+              </Link>
+
+              <label
+                htmlFor="mobile-nav-toggle"
+                role="button"
+                tabIndex={0}
+                aria-label="Fermer le menu latéral"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/8 text-white"
+              >
+                <X className="h-4 w-4" />
+              </label>
+            </div>
+
+            <p className="mt-4 text-[13px] leading-6 text-white/72">
+              {isAuthenticated && user?.name
+                ? `Connecte en tant que ${user.name}. Reprenez vos discussions, vos deals et vos actifs depuis un seul hub.`
+                : "Explorez les annonces, ouvrez une conversation et activez votre pipeline vendeur dans une interface plus editoriale."}
+            </p>
+          </div>
+
+          <nav className="mt-4 flex-1 space-y-3 overflow-y-auto dashboard-scrollbar">
             {coreLinks.map((link) => {
               const isActive = isLinkActive(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  onClick={closeSidebar}
+                  className={`flex items-center justify-between gap-3 rounded-[1.45rem] border px-4 py-3.5 ${
                     isActive
-                      ? "bg-teal-600 text-white"
-                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                      ? "border-lime-300/35 bg-lime-300/12 text-white"
+                      : "border-white/8 bg-white/6 text-white/80 hover:border-white/16 hover:bg-white/10"
                   }`}
                 >
-                  {link.label}
+                  <div className="min-w-0">
+                    <p className="text-[15px] font-semibold tracking-[-0.03em]">{link.label}</p>
+                    <p className="mt-1 text-[11px] leading-5 text-white/58">{link.helper}</p>
+                  </div>
+                  <ArrowRight className={`h-4 w-4 shrink-0 ${isActive ? "text-lime-300" : "text-white/35"}`} />
                 </Link>
               );
             })}
-            {!isAuthenticated ? (
-              <Link
-                href="/auth"
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                  isLinkActive("/auth")
-                    ? "bg-teal-600 text-white"
-                    : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                Connexion
-              </Link>
-            ) : (
-              <>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                  {user?.name}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  aria-label="Deconnexion"
-                  data-testid="logout-button"
-                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                >
-                  Deconnexion
-                </button>
-              </>
-            )}
           </nav>
 
-          <div className="flex items-center gap-2 md:hidden">
-            <label
-              htmlFor="mobile-nav-toggle"
-              role="button"
-              tabIndex={0}
-              aria-label="Ouvrir le menu"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
-            >
-              <Menu className="h-5 w-5" />
-            </label>
-          </div>
-        </div>
-      </div>
-      </header>
-
-      <div className="mobile-sidebar-layer md:hidden">
-          <label htmlFor="mobile-nav-toggle" className="mobile-sidebar-backdrop" aria-label="Fermer le menu" />
-
-          <aside className="mobile-sidebar-panel absolute inset-y-0 left-0 flex w-[min(88vw,22rem)] flex-col border-r border-slate-200 bg-white shadow-[0_28px_80px_-28px_rgba(15,23,42,0.4)]">
-            <div className="border-b border-slate-200 px-4 py-4">
-              <div className="flex items-center justify-between gap-3">
-                <Link href="/" className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-900">
-                  <Building2 className="h-5 w-5 text-teal-600" />
-                  OXLIS
-                </Link>
-
-                <label
-                  htmlFor="mobile-nav-toggle"
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Fermer le menu latéral"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700"
-                >
-                  <X className="h-4 w-4" />
-                </label>
-              </div>
-
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Navigation mobile</p>
-                <p className="mt-1 text-sm text-slate-700">
-                  {isAuthenticated && user?.name ? `Connecte en tant que ${user.name}` : "Accedez rapidement aux sections principales sans bandeau coupe."}
-                </p>
-              </div>
+          <div className="studio-panel mt-4 rounded-[1.6rem] px-4 py-4">
+            <div className="mb-4 space-y-2 text-[10px] leading-5 text-slate-600">
+              <p>© {year} OXLIS. Deals, offres, conversations et execution vendeur dans un meme cockpit.</p>
+              <p>Une interface premium mobile sans sacrifier les flux existants.</p>
             </div>
 
-            <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-4 dashboard-scrollbar">
-              {coreLinks.map((link) => {
-                const isActive = isLinkActive(link.href);
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition ${
-                      isActive
-                        ? "border-teal-300 bg-teal-50 text-slate-900"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                    }`}
-                      onClick={closeSidebar}
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold">{link.label}</p>
-                      <p className="mt-1 text-xs text-slate-500">{link.helper}</p>
-                    </div>
-                    <ArrowRight className={`h-4 w-4 shrink-0 ${isActive ? "text-teal-700" : "text-slate-400"}`} />
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="border-t border-slate-200 px-4 py-4">
-              <div className="mb-4 space-y-2 text-[11px] leading-5 text-slate-500">
-                <p>© {year} OXLIS. Marketplace pour la transmission de business numeriques.</p>
-                <p>Annonces, conversations, offres et sequestre simule dans un meme environnement.</p>
-              </div>
-
-              {!isAuthenticated ? (
-                <Link
-                  href="/auth"
-                  onClick={closeSidebar}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-600"
-                >
+            {!isAuthenticated ? (
+              <div className="grid gap-2">
+                <Link href="/auth" onClick={closeSidebar} className="studio-button-primary w-full text-[13px]">
                   Connexion
                 </Link>
-              ) : (
-                <button
-                  onClick={handleLogout}
-                  aria-label="Deconnexion"
-                  data-testid="logout-button-mobile"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Deconnexion
-                </button>
-              )}
-            </div>
+                <Link href="/sell" onClick={closeSidebar} className="studio-button-secondary w-full text-[13px]">
+                  Publier un actif
+                </Link>
+              </div>
+            ) : (
+              <button
+                onClick={handleLogout}
+                aria-label="Deconnexion"
+                data-testid="logout-button-mobile"
+                className="studio-button-secondary w-full text-[13px]"
+              >
+                <LogOut className="h-4 w-4" />
+                Deconnexion
+              </button>
+            )}
+          </div>
           </aside>
       </div>
     </>

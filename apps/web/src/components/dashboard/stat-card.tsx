@@ -8,10 +8,12 @@ type Props = {
 
 export function StatCard({ label, value, icon }: Props) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="mb-2 inline-flex rounded-xl bg-teal-50 p-2 text-teal-700">{icon}</div>
-      <p className="text-xs uppercase tracking-[0.11em] text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{value}</p>
+    <article className="studio-card px-4 py-4 sm:px-5">
+      <div className="mb-4 inline-flex rounded-2xl bg-[linear-gradient(135deg,#14110f,#2b241b)] p-3 text-lime-300 shadow-sm">
+        {icon}
+      </div>
+      <p className="studio-kicker !text-[0.62rem] !tracking-[0.18em]">{label}</p>
+      <p className="mt-3 text-3xl font-semibold tracking-[-0.06em] text-slate-950">{value}</p>
     </article>
   );
 }

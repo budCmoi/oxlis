@@ -123,9 +123,9 @@ export default function ListingDetailPage() {
 
   if (isLoading && !listing) {
     return (
-      <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
-        <section className="rounded-[28px] border border-slate-200 bg-white px-5 py-6 shadow-sm sm:px-6 sm:py-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Annonce</p>
+      <div className="page-shell px-4 py-5">
+        <section className="studio-shell px-5 py-6 sm:px-6 sm:py-7">
+          <p className="studio-kicker">Annonce</p>
           <p className="mt-3 text-sm leading-6 text-slate-600">Chargement de l&apos;annonce...</p>
         </section>
       </div>
@@ -134,26 +134,20 @@ export default function ListingDetailPage() {
 
   if (loadError && !listing) {
     return (
-      <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
-        <section className="rounded-[28px] border border-slate-200 bg-white px-5 py-6 shadow-sm sm:px-6 sm:py-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Annonce indisponible</p>
-          <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">Cette fiche n&apos;est plus accessible.</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+      <div className="page-shell px-4 py-5">
+        <section className="studio-shell px-5 py-6 sm:px-6 sm:py-7">
+          <p className="studio-kicker">Annonce indisponible</p>
+          <h1 className="mt-4 text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">Cette fiche n&apos;est plus accessible.</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">
             {loadError.includes("introuvable")
               ? "Le lien pointe vers une annonce qui n'existe plus ou qui n'est plus publique."
               : loadError}
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-600"
-            >
+            <Link href="/" className="studio-button-primary text-sm">
               Retour aux annonces
             </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
+            <Link href="/dashboard" className="studio-button-secondary text-sm">
               Aller au tableau de bord
             </Link>
           </div>
@@ -242,13 +236,13 @@ export default function ListingDetailPage() {
   ];
 
   return (
-    <div className="w-full px-4 py-5 sm:px-5 sm:py-6 lg:px-6">
+    <div className="page-shell page-stack pt-4 sm:pt-6">
       <AnimatedSection
         as="section"
-        className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(circle_at_top_right,#99f6e4,transparent_50%),linear-gradient(120deg,#f8fafc,#ecfeff_45%,#fefce8)] px-4 py-6 sm:px-6 sm:py-9 lg:px-8 lg:py-10"
+        className="studio-shell px-4 py-6 sm:px-6 sm:py-9 lg:px-8 lg:py-10"
       >
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
+          <div className="max-w-3xl" data-stagger-item>
             <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 sm:text-xs">
               <span>{listing.niche}</span>
               <span className="text-slate-400">•</span>
@@ -256,15 +250,15 @@ export default function ListingDetailPage() {
               <span className="text-slate-400">•</span>
               <span>{formatListingStatus(listing.status)}</span>
             </div>
-            <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl">{listing.title}</h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-700 [overflow-wrap:anywhere] sm:text-base lg:text-lg">{listing.summary}</p>
+            <h1 className="mt-4 text-4xl font-semibold leading-tight text-slate-950 [overflow-wrap:anywhere] sm:text-5xl lg:text-6xl">{listing.title}</h1>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-700 [overflow-wrap:anywhere] sm:text-base lg:text-lg">{listing.summary}</p>
           </div>
 
           <div className="grid w-full grid-cols-2 gap-2 sm:gap-3 xl:max-w-[460px] xl:min-w-0">
             {heroMetrics.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-white/60 bg-white/80 px-3 py-3 shadow-sm backdrop-blur-sm sm:px-4">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-slate-500 sm:text-xs">{item.label}</p>
-                <p className="mt-1 text-base font-semibold text-slate-900 [overflow-wrap:anywhere] sm:text-lg">{item.value}</p>
+              <div key={item.label} className="studio-stat" data-stagger-item>
+                <p className="studio-kicker !text-[0.58rem] !tracking-[0.18em]">{item.label}</p>
+                <p className="mt-3 text-base font-semibold text-slate-950 [overflow-wrap:anywhere] sm:text-lg">{item.value}</p>
               </div>
             ))}
           </div>
@@ -273,20 +267,20 @@ export default function ListingDetailPage() {
 
       <AnimatedSection
         as="div"
-        className="mt-4 grid gap-4 sm:mt-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.82fr)] xl:items-start"
+        className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.82fr)] xl:items-start"
         delay={0.08}
       >
-        <section className="order-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 xl:order-1">
+        <section className="studio-shell order-2 p-4 sm:p-6 xl:order-1">
           <div className="mb-6">
             <ListingGallery listing={listing} />
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Memo de l&apos;annonce</p>
+          <div className="studio-panel px-4 py-4 sm:px-6 sm:py-6">
+            <p className="studio-kicker">Memo de l&apos;annonce</p>
             <div className="mt-4 space-y-4 sm:max-h-[32rem] sm:overflow-y-auto sm:pr-3 sm:dashboard-scrollbar">
               {descriptionSections.map((section, index) => (
                 <div key={`${listing.id}-description-${index}`}>
-                  {section.heading ? <h2 className="text-sm font-semibold text-slate-900">{section.heading}</h2> : null}
+                  {section.heading ? <h2 className="text-lg font-semibold text-slate-950">{section.heading}</h2> : null}
                   <p className={`${section.heading ? "mt-2" : ""} text-sm leading-7 text-slate-700`}>{section.body}</p>
                 </div>
               ))}
@@ -301,7 +295,7 @@ export default function ListingDetailPage() {
 
           <div className="mt-5 flex flex-wrap gap-2">
             {listing.techStack.map((tech) => (
-              <span key={tech} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+              <span key={tech} className="rounded-full border border-[var(--line)] bg-white/60 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700">
                 {tech}
               </span>
             ))}
@@ -309,9 +303,10 @@ export default function ListingDetailPage() {
         </section>
 
         <aside className="order-1 space-y-4 xl:sticky xl:top-24 xl:order-2">
-          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <h2 className="text-lg font-semibold text-slate-900">Faire une offre</h2>
-            <p className="mt-1 text-sm text-slate-600">Vendeur : {listing.owner.name}</p>
+          <section className="studio-shell px-4 py-4 sm:px-5">
+            <p className="studio-kicker">Execution acheteur</p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-950">Faire une offre</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Vendeur : {listing.owner.name}</p>
             <input
               type="number"
               aria-label="Montant de l'offre"
@@ -319,7 +314,7 @@ export default function ListingDetailPage() {
               onChange={(e) => setOfferAmount(e.target.value)}
               placeholder="Montant de l'offre"
               disabled={isOwner}
-              className="mt-3 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-teal-400 focus:ring"
+              className="mt-3 w-full px-4 py-3 text-sm"
             />
             <textarea
               aria-label="Note privee"
@@ -328,14 +323,14 @@ export default function ListingDetailPage() {
               placeholder="Ajouter une note privee"
               rows={4}
               disabled={isOwner}
-              className="mt-3 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-teal-400 focus:ring"
+              className="mt-3 w-full px-4 py-3 text-sm"
             />
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <button
                 onClick={submitOffer}
                 data-testid="submit-offer"
                 disabled={isOwner}
-                className="w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold leading-5 whitespace-normal text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="studio-button-primary w-full text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isAuthenticated ? "Envoyer l'offre" : "Se connecter pour proposer"}
               </button>
@@ -343,7 +338,7 @@ export default function ListingDetailPage() {
                 onClick={createConversation}
                 data-testid="contact-seller"
                 disabled={isOwner}
-                className="w-full rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold leading-5 whitespace-normal text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="studio-button-secondary w-full text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Contacter le vendeur
               </button>
@@ -352,13 +347,14 @@ export default function ListingDetailPage() {
             {status ? <p className="mt-3 text-xs text-slate-600">{status}</p> : null}
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <h2 className="text-lg font-semibold text-slate-900">Offres recentes</h2>
+          <section className="studio-shell px-4 py-4 sm:px-5">
+            <p className="studio-kicker">Pulse du dossier</p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-950">Offres recentes</h2>
             <div className="mt-3 space-y-2">
               {listing.offers.slice(0, 5).map((offer) => (
-                <div key={offer.id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                <div key={offer.id} className="rounded-[1.2rem] border border-[var(--line)] bg-white/60 px-3 py-3 text-sm">
                   <p className="font-semibold text-slate-800">{formatCurrency(offer.amount)}</p>
-                  <p className="text-xs uppercase tracking-[0.1em] text-slate-500">{formatOfferStatus(offer.status)}</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">{formatOfferStatus(offer.status)}</p>
                 </div>
               ))}
               {listing.offers.length === 0 ? <p className="text-sm text-slate-500">Aucune offre pour le moment.</p> : null}
@@ -380,10 +376,10 @@ function DetailCard({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-      <p className="text-xs uppercase tracking-[0.1em] text-slate-500">{label}</p>
-      <p className="mt-2 text-sm font-semibold leading-6 text-slate-900 [overflow-wrap:anywhere] sm:text-base">{value}</p>
-      <p className="mt-2 text-[13px] leading-5 text-slate-600 sm:mt-3 sm:text-sm sm:leading-6">{description}</p>
+    <div className="studio-card px-4 py-4">
+      <p className="studio-kicker !text-[0.62rem] !tracking-[0.18em]">{label}</p>
+      <p className="mt-3 text-base font-semibold leading-6 text-slate-950 [overflow-wrap:anywhere] sm:text-lg">{value}</p>
+      <p className="mt-3 text-[13px] leading-6 text-slate-600 sm:text-sm">{description}</p>
     </div>
   );
 }

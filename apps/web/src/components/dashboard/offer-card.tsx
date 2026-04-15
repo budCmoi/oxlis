@@ -13,22 +13,22 @@ type OfferCardProps = {
 
 export function OfferCard({ offer, busy, primaryAction, secondaryAction, tertiaryAction }: OfferCardProps) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+    <div className="studio-card px-4 py-4 text-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <Link href={`/listings/${offer.listing?.id}`} className="font-medium text-slate-900 hover:text-teal-700">
+          <Link href={`/listings/${offer.listing?.id}`} className="text-xl font-semibold text-slate-950 hover:text-slate-700">
             {offer.listing?.title ?? "Annonce sans titre"}
           </Link>
-          <p className="mt-1 text-slate-700">{formatCurrency(offer.amount)}</p>
+          <p className="mt-2 text-base font-semibold text-slate-800">{formatCurrency(offer.amount)}</p>
           <div className="mt-2 flex flex-wrap gap-2 text-xs">
-            <span className="rounded-full bg-white px-3 py-1 font-semibold text-slate-600">{formatOfferStatus(offer.status)}</span>
+            <span className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1.5 font-semibold uppercase tracking-[0.12em] text-slate-600">{formatOfferStatus(offer.status)}</span>
             {offer.escrow ? (
-              <span className="rounded-full bg-teal-50 px-3 py-1 font-semibold text-teal-700">
+              <span className="rounded-full border border-lime-300/35 bg-lime-300/14 px-3 py-1.5 font-semibold uppercase tracking-[0.12em] text-lime-800">
                 Sequestre {formatEscrowStatus(offer.escrow.status)}
               </span>
             ) : null}
           </div>
-          {offer.message ? <p className="mt-2 text-slate-600">{offer.message}</p> : null}
+          {offer.message ? <p className="mt-3 text-sm leading-6 text-slate-600">{offer.message}</p> : null}
         </div>
 
         {primaryAction || secondaryAction || tertiaryAction ? (
