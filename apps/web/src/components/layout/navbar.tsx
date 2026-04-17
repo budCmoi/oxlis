@@ -46,7 +46,7 @@ export function Navbar() {
 
       <header className="sticky top-0 z-40 px-3 pt-3 sm:px-4 lg:px-6">
         <div className="page-shell !px-0">
-          <div data-page-enter className="studio-shell border-white/45 bg-[rgba(255,250,242,0.72)] px-4 py-4 sm:px-6">
+          <div data-page-enter className="studio-shell border-[color:var(--line-strong)] bg-[rgba(10,14,18,0.84)] px-4 py-4 sm:px-6">
             <div className="flex items-center justify-between gap-3 xl:grid xl:grid-cols-[minmax(0,280px)_1fr_minmax(0,280px)] xl:gap-4">
               <Link href="/" className="inline-flex min-w-0 flex-1 items-center gap-3 text-slate-900 xl:flex-none">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#14110f,#2b241b)] text-white shadow-sm">
